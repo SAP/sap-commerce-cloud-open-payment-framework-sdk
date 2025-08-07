@@ -1,0 +1,242 @@
+/*
+ * Copyright (c) 2025 SAP SE or an SAP affiliate company. All rights reserved.
+ */
+package de.hybris.platform.opfacceleratoraddon.controllers;
+
+import de.hybris.platform.acceleratorstorefrontcommons.constants.WebConstants;
+import de.hybris.platform.acceleratorstorefrontcommons.controllers.pages.AbstractPageController;
+import de.hybris.platform.acceleratorstorefrontcommons.security.GUIDCookieStrategy;
+import de.hybris.platform.commercefacades.customer.CustomerFacade;
+import de.hybris.platform.commercefacades.order.CartFacade;
+import de.hybris.platform.commercefacades.order.CheckoutFacade;
+import de.hybris.platform.commercefacades.order.CheckoutPaymentFacade;
+import de.hybris.platform.commercefacades.order.data.DeliveryModesData;
+import de.hybris.platform.commercefacades.user.UserFacade;
+import de.hybris.platform.commercefacades.user.data.AddressData;
+import de.hybris.platform.commercefacades.user.data.CustomerData;
+import de.hybris.platform.commerceservices.customer.DuplicateUidException;
+import de.hybris.platform.commercewebservicescommons.dto.order.SAPGuestUserRequestWsDTO;
+import de.hybris.platform.facade.OPFAcceleratorPaymentFacade;
+import de.hybris.platform.facade.OPFAddressFacade;
+import de.hybris.platform.facade.OPFCheckoutPaymentFacade;
+import de.hybris.platform.opf.dto.SAPGuestUserRequestDTO;
+import de.hybris.platform.opf.dto.user.AddressWsDTO;
+import de.hybris.platform.opfacceleratoraddon.exception.OPFAcceleratorException;
+import de.hybris.platform.opfacceleratoraddon.util.OPFAcceleratorUtil;
+import de.hybris.platform.opfacceleratoraddon.validation.OPFAddressValidator;
+import de.hybris.platform.opfacceleratoraddon.validation.OPFDeliveryAddressValidator;
+import de.hybris.platform.opfacceleratoraddon.validation.OPFGuestValidator;
+import de.hybris.platform.servicelayer.exceptions.ModelSavingException;
+import de.hybris.platform.webservicescommons.dto.error.ErrorListWsDTO;
+import org.apache.log4j.Logger;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
+
+import static de.hybris.platform.util.Sanitizer.sanitize;
+
+@Controller
+@RequestMapping(value = "/opf/cart")
+public class OPFCartController extends AbstractPageController {
+    private static final Logger LOG = Logger.getLogger(OPFCartController.class);
+    private static final String DEFAULT_GUEST_USER_NAME = "guest";
+    @Resource(name = "acceleratorCheckoutFacade")
+    private CheckoutFacade checkoutFacade;
+    @Resource(name = "opfCheckoutPaymentFacade")
+    private OPFCheckoutPaymentFacade opfCheckoutPaymentFacade;
+    @Resource(name = "opfAddressFacade")
+    private OPFAddressFacade opfAddressFacade;
+    @Resource(name = "userFacade")
+    private UserFacade userFacade;
+    @Resource(name = "opfAddressValidator")
+    private OPFAddressValidator opfAddressValidator;
+    @Resource(name = "opfGuestValidator")
+    private OPFGuestValidator opfGuestValidator;
+    @Resource(name = "opfDeliveryAddressValidator")
+    private OPFDeliveryAddressValidator opfDeliveryAddressValidator;
+    @Resource(name = "customerFacade")
+    private CustomerFacade customerFacade;
+    @Resource(name = "cartFacade")
+    private CartFacade cartFacade;
+    @Resource(name = "opfAcceleratorPaymentFacade")
+    private OPFAcceleratorPaymentFacade opfAcceleratorPaymentFacade;
+    @Resource(name = "sapCheckoutPaymentFacade")
+    private CheckoutPaymentFacade checkoutPaymentFacade;
+    @Resource(name = "guidCookieStrategy")
+    private GUIDCookieStrategy guidCookieStrategy;
+
+    /**
+     * Creates a guest user for the cart during checkout if the current user is anonymous.
+     *
+     * If the user is anonymous, attempts to create a guest user with a default username. Returns HTTP status codes based on the operation
+     * result: - 201 (Created) if the guest user is successfully created. - 500 (Internal Server Error) if a DuplicateUidException or any
+     * other exception occurs. - 200 (OK) if the current user is not anonymous.
+     *
+     * @param guestUser
+     *         the SAPGuestUserRequestDTO containing guest user information (optional)
+     * @return an integer representing the HTTP status code indicating the result of the operation
+     */
+    @PostMapping(value = "/guestuser", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public  ResponseEntity<Object> createCartGuestUser(@RequestBody(required = false) final SAPGuestUserRequestDTO guestUser){
+        if (getUserFacade().isAnonymousUser()) {
+            try {
+                customerFacade.createGuestUserForCheckout(null, DEFAULT_GUEST_USER_NAME);
+                return ResponseEntity.status(HttpStatus.CREATED).build();
+            } catch (Exception e) {
+                throw new OPFAcceleratorException(String.format("Failed to save QuickBuy guest user profile: %s", guestUser.getEmail()), e);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
+     * Updates the current user's guest profile with the provided guest user details.
+     *
+     * This method performs the following steps: - Retrieves the current cart's customer data. - Sets the guest user's email from the
+     * request. - Validates the updated customer data. - If validation errors exist, returns a 400 Bad Request with error details. -
+     * Attempts to update the guest user profile in the database. - If a model saving exception occurs, returns a 500 Internal Server Error
+     * with an error message. - If the current user is still a guest, sets cookies and session attributes appropriately. - Returns the
+     * updated guest user info or an empty 200 OK response.
+     *
+     * @param guestUser
+     *         the SAPGuestUserRequestWsDTO containing guest user details to update
+     * @param request
+     *         the HttpServletRequest from the client
+     * @param response
+     *         the HttpServletResponse to send cookies if necessary
+     * @return a ResponseEntity containing either: - Bad Request status and validation errors if validation fails - Internal Server Error
+     *         status and message if saving fails - OK status and updated guest user data if successful and guest user - OK status with
+     *         empty body if successful and not a guest user
+     */
+    @PatchMapping(value = "/guestuser", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> updateCurrentUserProfile(@RequestBody final SAPGuestUserRequestWsDTO guestUser,
+            final HttpServletRequest request, final HttpServletResponse response) {
+
+        CustomerData guestCustomerData = cartFacade.getCurrentCartCustomer();
+        guestCustomerData.setSapGuestUserEmail(guestUser.getEmail());
+        Errors errors = new BeanPropertyBindingResult(guestCustomerData, "guestCustomerData");
+        opfGuestValidator.validate(guestCustomerData, errors);
+        Map<String, Object> errorList = OPFAcceleratorUtil.handleErrors(errors);
+        if (!errorList.isEmpty()) {
+            return ResponseEntity.badRequest().body(errorList);
+        }
+        try {
+            customerFacade.updateGuestUserProfile(guestCustomerData);
+        } catch (ModelSavingException e) {
+            throw new OPFAcceleratorException(String.format("Failed to save QuickBuy guest user profile: %s", guestUser.getEmail()), e);
+        }
+        if (opfCheckoutPaymentFacade.isGuestUser()) {
+            try {
+                guidCookieStrategy.setCookie(request, response);
+                getSessionService().setAttribute(WebConstants.ANONYMOUS_CHECKOUT, Boolean.TRUE);
+                return ResponseEntity.ok(guestUser);
+            } catch (Exception e) {
+                throw new OPFAcceleratorException(
+                        String.format("Failed to update QuickBuy guest user profile for email: %s", guestUser.getEmail()), e);
+            }
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Only for Quick Buy
+     * Creates a delivery address and payment address for the cart.
+     *
+     * Accepts a delivery address payload, maps it to AddressData, validates it and adds it to the user's
+     * address book. If marked as default, it is set as the user's default address.
+     *
+     * @param address
+     *         the address data transferred from the client
+     * @return the created and saved address data
+     */
+    @PostMapping(value = "/addresses/delivery", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<?> createCartAddress(@RequestBody final AddressWsDTO address) {
+        AddressData addressData = opfAddressFacade.mapAddressWsDTOToAddressData(address);
+        final Errors errors = new BeanPropertyBindingResult(addressData, "addressData");
+        opfAddressValidator.validate(addressData, errors);
+        Map<String, Object> errorList = OPFAcceleratorUtil.handleErrors(errors);
+        if (!errorList.isEmpty()) {
+            return ResponseEntity.badRequest().body(errorList);
+        }
+        addressData.setShippingAddress(true);
+        addressData.setBillingAddress(true);
+        addressData.setVisibleInAddressBook(true);
+        userFacade.addAddress(addressData);
+        if (addressData.isDefaultAddress()) {
+            userFacade.setDefaultAddress(addressData);
+        }
+        address.setId(addressData.getId());
+        opfDeliveryAddressValidator.validate(addressData, errors);
+        errorList = OPFAcceleratorUtil.handleErrors(errors);
+        if (!errorList.isEmpty()) {
+            return ResponseEntity.badRequest().body(errorList);
+        }
+        // For Quick Buy, same address to be used for delivery and billing address
+        checkoutFacade.setDeliveryAddress(addressData);
+        checkoutPaymentFacade.setPaymentAddress(addressData);
+        return ResponseEntity.status(HttpStatus.CREATED).body(addressData);
+    }
+
+    /**
+     * Retrieves the list of available delivery modes for the current cart.
+     *
+     * @return a wrapper object containing supported delivery modes
+     */
+    @GetMapping(value = "/deliverymodes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public DeliveryModesData getCartDeliveryModes() {
+        final DeliveryModesData deliveryModesData = new DeliveryModesData();
+        deliveryModesData.setDeliveryModes(checkoutFacade.getSupportedDeliveryModes());
+        return deliveryModesData;
+    }
+     /*
+     * Set Generic payment info model for Quick Buy flow
+     *
+     */
+    @PostMapping(value = "/paymentinfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public void setCartPaymentInfo() {
+        try{
+            opfAcceleratorPaymentFacade.setPaymentInfoOnCart();
+            checkoutFacade.prepareCartForCheckout();
+        }catch(Exception ex){
+            throw new OPFAcceleratorException("Failed to set payment info", ex);
+        }
+    }
+
+
+    /**
+     * Sets or replaces the delivery mode for the current cart.
+     *
+     * Throws an exception if the delivery mode cannot be set.
+     *
+     * @param deliveryModeId
+     *         the identifier of the delivery mode to be set
+     */
+    @PutMapping(value = "/deliverymode", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public void replaceCartDeliveryMode(@RequestParam(required = true) final String deliveryModeId) {
+        if (!checkoutFacade.setDeliveryMode(deliveryModeId)) {
+            throw new OPFAcceleratorException(String.format("Failed to set delivery mode with ID: %s", deliveryModeId));
+        }
+    }
+
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    @ExceptionHandler({ OPFAcceleratorException.class })
+    public ErrorListWsDTO handleOpfCheckoutException(final Throwable ex) {
+        LOG.error(sanitize(ex.getMessage()), ex);
+        return OPFAcceleratorUtil.handleErrorInternal(ex);
+    }
+}

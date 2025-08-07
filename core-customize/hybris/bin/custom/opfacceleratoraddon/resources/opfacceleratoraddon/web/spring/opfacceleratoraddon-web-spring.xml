@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/util
+           http://www.springframework.org/schema/util/spring-util.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd">
+           
+    <context:annotation-config/>
+
+	<!-- Controllers & Mappings (necessary to override controllers with the same mappings in the target storefront) -->
+<!--	<bean name="checkoutLoginController" class="de.hybris.platform.opfacceleratoraddon.controllers.pages.CheckoutLoginController"/>-->
+<!--	<bean name="abstractCheckoutStepController" class="de.hybris.platform.opfacceleratoraddon.controllers.pages.checkout.steps.AbstractCheckoutStepController"/>-->
+<!--	<bean name="multiStepCheckoutController" class="de.hybris.platform.opfacceleratoraddon.controllers.pages.checkout.steps.MultiStepCheckoutController"/>-->
+<!--	<bean name="abstractCheckoutController" class="de.hybris.platform.opfacceleratoraddon.controllers.pages.AbstractCheckoutController"/>-->
+
+	<!-- Expose /acceleratoraddon/web/webroot/WEB-INF/messages/base.js.properties  resource bundle as javascript variables -->
+	<bean id="defaultOpfacceleratoraddonJavaScriptMessageResourceAccessor" parent="abstractJavaScriptMessageResourceAccessor">
+		<property name="addOnName" value="opfacceleratoraddon"/>
+	</bean>
+
+	<bean id="defaultOpfacceleratoraddonBeforeViewJsPropsHandlerAdaptee" parent="abstractBeforeViewJsPropsHandlerAdaptee" class="de.hybris.platform.addonsupport.interceptors.ExportJsPropertiesBeforeViewHandler">
+		<property name="messageSource" ref="defaultOpfacceleratoraddonJavaScriptMessageResourceAccessor"/>
+	</bean>
+
+	<bean id="getOpfacceleratoraddonBeforeViewHandler" parent="beforeViewHandlerAdapter">
+		<property name="adaptee">
+			<ref bean="defaultOpfacceleratoraddonBeforeViewJsPropsHandlerAdaptee"/>
+		</property>
+	</bean>
+	<bean id="OpfacceleratoraddonBeforeViewHandlerListMergeDirective" depends-on="beforeViewHandlersList" parent="listMergeDirective">
+		<property name="add" ref="getOpfacceleratoraddonBeforeViewHandler"/>
+	</bean>
+
+
+
+
+	<bean id="opfAcceleratorAddonBeforeViewHandler" class="de.hybris.platform.opfacceleratoraddon.handler.OPFAcceleratorAddonBeforeViewHandler">
+		<property name="viewMap" ref="opfAcceleratorAddonViewMap" />
+	</bean>
+
+	<bean depends-on="beforeViewHandlersList" parent="listMergeDirective">
+		<property name="add" ref="opfAcceleratorAddonBeforeViewHandler" />
+	</bean>
+
+	<util:map id="opfAcceleratorAddonViewMap" key-type="java.lang.String" value-type="java.lang.Map">
+		<entry key="pages/checkout/multi/opfPaymentPage" value-ref="opfPaymentPage"/>
+		<entry key="pages/checkout/multi/opfVerifyPaymentPage" value-ref="opfVerifyPaymentPage"/>
+	</util:map>
+
+	<util:map id="opfPaymentPage" key-type="java.lang.String" value-type="java.lang.String">
+		<entry key="viewName" value="/pages/checkout/multi/opfPaymentPage" />
+	</util:map>
+	<util:map id="opfVerifyPaymentPage" key-type="java.lang.String" value-type="java.lang.String">
+		<entry key="viewName" value="/pages/checkout/multi/opfVerifyPaymentPage" />
+	</util:map>
+
+	<alias name="defaultOPFAddressValidator" alias="opfAddressValidator"/>
+	<bean id="defaultOPFAddressValidator" class="de.hybris.platform.opfacceleratoraddon.validation.OPFAddressValidator">
+		<constructor-arg ref="messageSource"/>
+		<constructor-arg ref="i18NService"/>
+	</bean>
+
+	<alias name="defaultOPFDeliveryAddressValidator" alias="opfDeliveryAddressValidator"/>
+	<bean id="defaultOPFDeliveryAddressValidator"
+		  class="de.hybris.platform.opfacceleratoraddon.validation.OPFDeliveryAddressValidator">
+		<constructor-arg ref="deliveryService"/>
+		<constructor-arg ref="cartService"/>
+		<constructor-arg ref="messageSource"/>
+		<constructor-arg ref="i18NService"/>
+	</bean>
+	<alias name="defaultOPFOrderCartValidator" alias="opfOrderCartValidator"/>
+	<bean id="defaultOPFOrderCartValidator" class="de.hybris.platform.opfacceleratoraddon.validation.OPFOrderCartValidator"/>
+
+	<alias name="defaultOPFGuestValidator" alias="opfGuestValidator"/>
+	<bean id="defaultOPFGuestValidator" class="de.hybris.platform.opfacceleratoraddon.validation.OPFGuestValidator">
+		<constructor-arg ref="messageSource"/>
+		<constructor-arg ref="i18NService"/>
+		<constructor-arg ref="configurationService"/>
+	</bean>
+</beans>

@@ -1,0 +1,11 @@
+#Ant properties
+#Wed Jan 08 03:42:05 CET 2025
+version.api=2211
+vendor=hybris
+group.id=de.hybris.platform
+name=opfacceleratorcore
+description=opfacceleratorcore
+builddate=20250108 0341
+releasedate=20241212 1444
+version=2211.33
+module.name=platform-module

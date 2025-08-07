@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <context:annotation-config/>
+
+    <context:component-scan base-package="de.hybris.platform.opfacceleratoraddon.controllers"
+                            scope-resolver="de.hybris.platform.spring.IgnoreTenantScopeMetadataResolver"/>
+
+    <!-- Checkout Steps -->
+
+    <alias name="abstractCheckoutStep" alias="checkoutStep"/>
+    <bean id="abstractCheckoutStep" class="de.hybris.platform.acceleratorstorefrontcommons.checkout.steps.CheckoutStep"
+          abstract="true"/>
+
+    <!-- OPF Checkout Steps START -->
+
+	<alias name="defaultOpfMultiStepCheckout" alias="opfMultiStepCheckout"/>
+    <bean id="defaultOpfMultiStepCheckout" parent="checkoutStep">
+        <property name="checkoutGroup" ref="opfCheckoutGroup"/>
+        <property name="checkoutStepValidator" ref="defaultMultiStepCheckoutValidator"/>
+        <property name="transitions">
+            <map>
+                <entry key="previous" value-ref="REDIRECT_TO_CART"/>
+                <entry key="current" value-ref="REDIRECT_MULTI_STEP_CHECKOUT"/>
+                <entry key="next" value-ref="REDIRECT_TO_DELIVERY_ADDRESS"/>
+            </map>
+        </property>
+        <property name="progressBarId" value="multi"/>
+    </bean>
+
+
+    <alias name="defaultOpfDeliveryAddressCheckoutStep" alias="opfDeliveryAddressCheckoutStep"/>
+    <bean id="defaultOpfDeliveryAddressCheckoutStep" parent="checkoutStep">
+        <property name="checkoutGroup" ref="opfCheckoutGroup"/>
+        <property name="checkoutStepValidator" ref="deliveryAddressCheckoutValidator"/>
+        <property name="transitions">
+            <map merge="true">
+                <entry key="previous" value-ref="REDIRECT_TO_CART"/>
+                <entry key="current" value-ref="REDIRECT_TO_DELIVERY_ADDRESS"/>
+                <entry key="next" value-ref="REDIRECT_TO_DELIVERY_METHOD"/>
+            </map>
+        </property>
+        <property name="progressBarId" value="deliveryAddress"/>
+    </bean>
+
+
+    <alias name="defaultOpfDeliveryMethodCheckoutStep" alias="opfDeliveryMethodCheckoutStep"/>
+    <bean id="defaultOpfDeliveryMethodCheckoutStep" parent="checkoutStep">
+        <property name="checkoutGroup" ref="opfCheckoutGroup"/>
+        <property name="checkoutStepValidator" ref="deliveryMethodCheckoutValidator"/>
+        <property name="transitions">
+            <map merge="true">
+                <entry key="previous" value-ref="REDIRECT_TO_DELIVERY_ADDRESS"/>
+                <entry key="current" value-ref="REDIRECT_TO_DELIVERY_METHOD"/>
+                <entry key="next" value-ref="REDIRECT_TO_OPF_PAYMENT"/>
+            </map>
+        </property>
+        <property name="progressBarId" value="deliveryMethod"/>
+    </bean>
+
+
+	<alias name="defaultOpfPaymentCheckoutStep" alias="opfPaymentCheckoutStep"/>
+	<bean id="defaultOpfPaymentCheckoutStep" parent="checkoutStep">
+		<property name="checkoutGroup" ref="opfCheckoutGroup"/>
+		<!--<property name="checkoutStepValidator" ref="opfPaymentCheckoutValidator"/>-->
+		<property name="transitions">
+			<map merge="true">
+				<entry key="previous" value-ref="REDIRECT_TO_DELIVERY_METHOD"/>
+				<entry key="current" value-ref="REDIRECT_TO_OPF_PAYMENT"/>
+                <entry key="next" value="redirect:/checkout/orderConfirmation/%s"/>
+			</map>
+		</property>
+		<property name="progressBarId" value="opfPayment"/>
+	</bean>
+
+	<!-- OPF Checkout Steps Ends -->
+
+    <!---OPF Checkout Group START-->
+    <alias name="defaultOpfMultiStepCheckoutGroup" alias="opfCheckoutGroup"/>
+    <bean id="defaultOpfMultiStepCheckoutGroup"
+          class="de.hybris.platform.acceleratorstorefrontcommons.checkout.steps.CheckoutGroup">
+        <property name="groupId" value="opfGroup"/>
+        <property name="checkoutStepMap">
+            <map merge="true">
+                <entry key="multi" value-ref="defaultOpfMultiStepCheckout"/>
+                <entry key="delivery-address" value-ref="defaultOpfDeliveryAddressCheckoutStep"/>
+                <entry key="delivery-method" value-ref="defaultOpfDeliveryMethodCheckoutStep"/>
+                <entry key="pickup-location" value-ref="pickupLocationCheckoutStep"/>
+                <entry key="opf-payment" value-ref="defaultOpfPaymentCheckoutStep"/>
+            </map>
+        </property>
+        <property name="validationResultsMap">
+            <map merge="true">
+                <entry key="FAILED" value-ref="REDIRECT_TO_CART"/>
+                <entry key="REDIRECT_TO_DELIVERY_ADDRESS" value-ref="REDIRECT_TO_DELIVERY_ADDRESS"/>
+                <entry key="REDIRECT_TO_PICKUP_LOCATION" value-ref="REDIRECT_TO_PICKUP_LOCATION"/>
+                <entry key="REDIRECT_TO_CART" value-ref="REDIRECT_TO_CART"/>
+                <entry key="REDIRECT_TO_OPF_PAYMENT" value-ref="REDIRECT_TO_OPF_PAYMENT"/>
+                <entry key="REDIRECT_TO_DELIVERY_METHOD" value-ref="REDIRECT_TO_DELIVERY_METHOD"/>
+            </map>
+        </property>
+        <property name="checkoutProgressBar">
+            <map merge="true">
+                <entry key="1" value-ref="deliveryAddressCheckoutStep"/>
+                <entry key="2" value-ref="deliveryMethodCheckoutStep"/>
+                <entry key="3" value-ref="opfPaymentCheckoutStep"/>
+            </map>
+        </property>
+    </bean>
+    <!---OPF checkout group END -->
+
+    <!--Checkout GroupMap-->
+    <bean id="opfCheckoutFlowGroupMapMergeDirective" depends-on="checkoutFlowGroupMap" parent="mapMergeDirective">
+        <property name="key" value="opfCheckoutGroup" />
+        <property name="value" ref="opfCheckoutGroup" />
+    </bean>
+    <!--Checkout GroupMap-->
+
+    <!-- Redirects -->
+    <bean id="REDIRECT_TO_CART" class="java.lang.String">
+        <constructor-arg value="redirect:/cart"/>
+    </bean>
+
+    <bean id="REDIRECT_MULTI_STEP_CHECKOUT" class="java.lang.String">
+        <constructor-arg value="redirect:/checkout/multi"/>
+    </bean>
+
+    <bean id="REDIRECT_TO_DELIVERY_ADDRESS" class="java.lang.String">
+        <constructor-arg value="redirect:/checkout/multi/delivery-address/add"/>
+    </bean>
+
+    <bean id="REDIRECT_TO_DELIVERY_METHOD" class="java.lang.String">
+        <constructor-arg value="redirect:/checkout/multi/delivery-method/choose"/>
+    </bean>
+
+    <bean id="REDIRECT_TO_OPF_PAYMENT" class="java.lang.String">
+        <constructor-arg value="redirect:/checkout/multi/opf-payment/choose"/>
+    </bean>
+
+    <bean id="REDIRECT_TO_PICKUP_LOCATION" class="java.lang.String">
+        <constructor-arg value="redirect:/checkout/multi/pickup-location/choose"/>
+    </bean>
+
+    <bean id="REDIRECT_TO_PAYMENT_METHOD" class="java.lang.String">
+        <constructor-arg value="redirect:/checkout/multi/payment-method/add"/>
+    </bean>
+</beans>

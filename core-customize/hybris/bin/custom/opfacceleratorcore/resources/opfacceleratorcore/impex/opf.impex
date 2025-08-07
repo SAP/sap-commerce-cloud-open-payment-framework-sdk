@@ -1,0 +1,13 @@
+# -----------------------------------------------------------------------
+# Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved.
+# -----------------------------------------------------------------------
+#
+# Update the Checkout Flow Group
+#
+
+$storeUid=electronics
+$checkoutFlowGroup=opfCheckoutGroup
+
+# Base Store
+INSERT_UPDATE BaseStore;uid[unique=true];checkoutFlowGroup;
+                       ;$storeUid       ;$checkoutFlowGroup;

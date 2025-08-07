@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+ Copyright (c) 2021 SAP SE or an SAP affiliate company. All rights reserved.
+-->
+<!--
+	ATTENTION: This is just an example file. You have to edit it according to your needs.
+-->
+
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="beans.xsd">
+
+	<!--
+		Example Data POJO
+	
+	<bean class="de.hybris.platform.data.AbstractPojo" abstract="true">
+		<property name="id" type="String"/>
+		<property name="flag" type="boolean"/>
+	</bean>
+
+	<bean class="de.hybris.platform.data.MyPojo" extends="de.hybris.platform.data.AbstractPojo">
+		<property name="message" type="String"/>
+	</bean>
+
+	<bean class="de.hybris.platform.data.AnnotatedPojo">
+
+		<import type="javax.xml.bind.annotation.XmlRootElement"/>
+		<import type="javax.xml.bind.annotation.XmlElements"/>
+		<import type="javax.xml.bind.annotation.XmlElement"/>
+
+		<annotations>@XmlRootElement</annotations>
+		
+		<property name="someText" type="String">
+
+			<annotations scope="getter">
+			@XmlElements(value = {
+					@XmlElement(name="map",
+						type=ValueAsMap.class),
+					@XmlElement(name="string",
+						type=ValueAsString.class)
+			})
+			</annotations>
+
+		</property>
+
+	</bean>
+
+    <bean  class="de.hybris.platform.catalog.data.Equals1">
+    	<property name="a1" type="boolean" equals="true"/>
+    	<property name="a2" type="int" equals="true"/>
+    	<property name="a3" type="String" equals="true"/>
+    	<property name="a4" type="de.hybris.platform.catalog.data.AbstractValue" equals="true"/>
+    	<property name="not4Equals" type="java.lang.Double"/>
+    </bean>
+
+    <bean class="de.hybris.platform.catalog.data.Equals2" extends="de.hybris.platform.catalog.data.Equals1" superEquals="true">
+    	<property name="a5" type="java.lang.Integer" equals="true"/>
+    	<property name="a6" type="java.util.List" equals="true"/>
+    	<property name="not4Equals" type="java.lang.Double"/>
+    </bean>
+    -->
+
+
+
+	<bean class="de.hybris.platform.opf.data.OPFPaymentMethodData">
+		<property name="page" type="de.hybris.platform.opf.data.OPFPaymentMethodPageDetailsData"/>
+		<property name="value"  type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentMethodValueData&gt;"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFPaymentMethodPageDetailsData">
+		<property name="size" type="Double"/>
+		<property name="totalElements" type="Double"/>
+		<property name="totalPages" type="Double"/>
+		<property name="number" type="Double"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFPaymentMethodValueData">
+		<property name="id" type="Double"/>
+		<property name="providerType" type="String"/>
+		<property name="merchantId" type="String"/>
+		<property name="displayName" type="String"/>
+		<property name="logoUrl" type="String"/>
+		<property name="digitalWalletQuickBuy" type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentDigitalWalletQuickBuyData&gt;"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFPaymentDigitalWalletQuickBuyData">
+		<property name="provider" type="String"/>
+		<property name="enabled" type="boolean"/>
+	</bean>
+
+	<bean class="de.hybris.platform.cta.request.OPFPaymentCTARequest">
+		<property name="accountIds" type="java.util.List&lt;String>"/>
+		<property name="scriptLocations" type="java.util.List&lt;String>"/>
+		<property name="ctaProductItems" type="java.util.List&lt;de.hybris.platform.cta.request.OPFPaymentCTAProductItems>"/>
+		<property name="additionalData" type="java.util.List&lt;de.hybris.platform.cta.response.OPFPaymentCTAAttributes>"/>
+	</bean>
+	<bean class="de.hybris.platform.cta.request.OPFPaymentCTAProductItems">
+		<property name="productId" type="String"/>
+		<property name="quantity" type="java.lang.Long"/>
+	</bean>
+
+
+	<bean class="de.hybris.platform.cta.response.OPFPaymentCTAResponse">
+		<property name="value" type="java.util.List&lt;de.hybris.platform.cta.response.OPFPaymentCTAValue>"/>
+	</bean>
+	<bean class="de.hybris.platform.cta.response.OPFPaymentCTAValue">
+		<property name="accountId" type="String"/>
+		<property name="dynamicScript" type="de.hybris.platform.cta.response.OPFPaymentCTADynamicScript"/>
+	</bean>
+	<bean class="de.hybris.platform.cta.response.OPFPaymentCTAAttributes">
+		<property name="key" type="String"/>
+		<property name="value" type="String"/>
+	</bean>
+	<bean class="de.hybris.platform.cta.response.OPFPaymentCTAUrlsData">
+		<property name="url" type="String"/>
+		<property name="sri" type="String"/>
+		<property name="attributes" type="java.util.List&lt;de.hybris.platform.cta.response.OPFPaymentCTAAttributes>"/>
+	</bean>
+
+	<bean class="de.hybris.platform.cta.response.OPFPaymentCTADynamicScript">
+		<property name="html" type="String"/>
+		<property name="cssUrls" type="java.util.List&lt;de.hybris.platform.cta.response.OPFPaymentCTAUrlsData>"/>
+		<property name="jsUrls" type="java.util.List&lt;de.hybris.platform.cta.response.OPFPaymentCTAUrlsData>"/>
+	</bean>
+	<bean class="de.hybris.platform.data.response.OPFActiveConfigValue">
+		<property name="id" type="Integer"/>
+		<property name="integrationId" type="Integer"/>
+		<property name="provider" type="String"/>
+		<property name="merchantId" type="String"/>
+		<property name="displayName" type="String"/>
+		<property name="active" type="boolean"/>
+		<property name="acquirerCountryCode" type="String"/>
+		<property name="gatewayProviderName" type="String"/>
+		<property name="paymentDescription" type="String"/>
+		<property name="logoUrl" type="String"/>
+		<property name="createdAt" type="String"/>
+		<property name="updatedAt" type="String"/>
+		<property name="digitalWalletQuickBuy" type="java.util.List&lt;de.hybris.platform.data.response.OPFActiveConfigDigitalWallet>"/>
+	</bean>
+
+	<bean class="de.hybris.platform.data.response.OPFActiveConfigDigitalWallet">
+		<property name="provider" type="String"/>
+		<property name="enabled" type="boolean"/>
+		<property name="merchantId" type="String"/>
+		<property name="countryCode" type="String"/>
+		<property name="googlePayGateway" type="String"/>
+		<property name="merchantName" type="String"/>
+	</bean>
+
+	<bean class="de.hybris.platform.data.response.OPFPageableData">
+		<property name="number" type="Integer"/>
+		<property name="size" type="Integer"/>
+		<property name="totalElements" type="Integer"/>
+		<property name="totalPages" type="Integer"/>
+	</bean>
+
+	<bean class="de.hybris.platform.data.response.OPFActiveConfigResponse">
+		<property name="value" type="java.util.List&lt;de.hybris.platform.data.response.OPFActiveConfigValue>"/>
+		<property name="pageable" type="de.hybris.platform.data.response.OPFPageableData"/>
+	</bean>
+
+	<bean class="de.hybris.platform.commercefacades.user.data.AddressData">
+		<property name="emailAddress" type="java.lang.String"/>
+		<property name="addressLine1" type="java.lang.String"/>
+		<property name="state" type="String"/>
+		<property name="phoneNumber" type="String"/>
+		<property name="zip" type="String"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFInitiatePaymentSessionRequestData">
+		<property name="orderPaymentId" type="String"/>
+		<property name="order" type="de.hybris.platform.opf.data.OPFOrderData"/>
+		<property name="clientId" type="String"/>
+		<property name="publicKey" type="String"/>
+		<property name="accountId" type="String"/>
+		<property name="resultURL" type="String"/>
+		<property name="cancelURL" type="String"/>
+		<property name="channel" type="String"/>
+		<property name="browserInfo" type="de.hybris.platform.opf.data.OPFPaymentBrowserInfoData"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFOrderData">
+		<property name="code" type="String"/>
+		<property name="total" type="Double"/>
+		<property name="currency" type="String"/>
+		<property name="divisionId" type="String"/>
+		<property name="subTotalWithTax" type="Double"/>
+		<property name="totalDiscount" type="Double"/>
+		<property name="customerEmail" type="String"/>
+		<property name="customerId" type="String"/>
+		<property name="shFeeWithTax" type="Double"/>
+		<property name="shFeeTax" type="Double"/>
+		<property name="languageAtCreation" type="String"/>
+		<property name="billingAddress" type="de.hybris.platform.data.request.OPFPaymentAddressData"/>
+		<property name="shippingAddress" type="de.hybris.platform.data.request.OPFPaymentAddressData"/>
+		<property name="shippingMethod" type="de.hybris.platform.opf.data.OPFShippingMethodData"/>
+		<property name="orderLines" type="java.util.List&lt;de.hybris.platform.opf.data.OPFOrderLineData&gt;"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFPaymentBrowserInfoData">
+		<property name="acceptHeader" type="String"/>
+		<property name="colorDepth" type="Integer"/>
+		<property name="javaEnabled" type="Boolean"/>
+		<property name="javaScriptEnabled" type="Boolean"/>
+		<property name="language" type="String"/>
+		<property name="screenHeight" type="Integer"/>
+		<property name="screenWidth" type="Integer"/>
+		<property name="userAgent" type="String"/>
+		<property name="timeZoneOffset" type="Integer"/>
+		<property name="ipAddress" type="String"/>
+		<property name="originUrl" type="String"/>
+	</bean>
+
+
+	<bean class="de.hybris.platform.opf.data.OPFShippingMethodData">
+		<property name="id" type="String"/>
+		<property name="name" type="String"/>
+		<property name="defaultFlag" type="Boolean"/>
+		<property name="cost" type="Double"/>
+		<property name="shFeeTax" type="Double"/>
+		<property name="shFeeTaxPercent" type="Double"/>
+		<property name="shFeeWithTax" type="Double"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFOrderLineData">
+		<property name="lineTotal" type="Double"/>
+		<property name="lineTax" type="Double"/>
+		<property name="lineShFeeTax" type="Double"/>
+		<property name="unitPrice" type="Double"/>
+		<property name="unitPriceWithTax" type="Double"/>
+		<property name="lineDiscount" type="Double"/>
+		<property name="lineSubTotalWithTax" type="Double"/>
+		<property name="lineTotalDiscount" type="Double"/>
+		<property name="lineTaxPercent" type="Double"/>
+		<property name="lineShFeeTaxPercent" type="Double"/>
+		<property name="productId" type="String"/>
+		<property name="productName" type="String"/>
+		<property name="quantity" type="Long"/>
+		<property name="productDescription" type="String"/>
+		<property name="deliveryMethod" type="String"/>
+	</bean>
+
+
+	<bean class="de.hybris.platform.opf.data.OPFPaymentAttributeData">
+		<property name="key" type="String"/>
+		<property name="name" type="String"/>
+		<property name="value" type="Object"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFPaymentDestinationData">
+		<property name="url" type="String"/>
+		<property name="method" type="String"/>
+		<property name="contentType" type="String"/>
+		<property name="body" type="java.lang.Object"/>
+		<property name="form" type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentAttributeData&gt;"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFPaymentUrlsData">
+		<property name="url" type="String"/>
+		<property name="sri" type="String"/>
+		<property name="attributes" type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentAttributeData&gt;"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFDynamicScriptData">
+		<property name="html" type="String"/>
+		<property name="cssUrls" type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentUrlsData&gt;"/>
+		<property name="jsUrls" type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentUrlsData&gt;"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.OPFInitiatePaymentData">
+		<property name="pattern" type="String"/>
+		<property name="paymentSessionId" type="String"/>
+		<property name="paymentIntent" type="long"/>
+		<property name="relayResultUrl" type="String"/>
+		<property name="relayCancelUrl" type="String"/>
+		<property name="destination" type="de.hybris.platform.opf.data.OPFPaymentDestinationData"/>
+		<property name="dynamicScript" type="de.hybris.platform.opf.data.OPFDynamicScriptData"/>
+	</bean>
+
+
+	<bean class="de.hybris.platform.opf.dto.OPFInitiatePaymentSessionRequest">
+		<import type="com.fasterxml.jackson.annotation.JsonProperty"/>
+		<import type="com.fasterxml.jackson.annotation.JsonInclude"/>
+		<annotations>@JsonInclude(JsonInclude.Include.NON_NULL)</annotations>
+		<property name="orderPaymentId" type="String">
+			<annotations>@JsonProperty("orderPaymentId")</annotations>
+		</property>
+		<property name="clientId" type="String">
+			<annotations>@JsonProperty("clientId")</annotations>
+		</property>
+		<property name="publicKey" type="String">
+			<annotations>@JsonProperty("publicKey")</annotations>
+		</property>
+		<property name="accountId" type="String">
+			<annotations>@JsonProperty("accountId")</annotations>
+		</property>
+		<property name="resultURL" type="String">
+			<annotations>@JsonProperty("resultURL")</annotations>
+		</property>
+		<property name="cancelURL" type="String">
+			<annotations>@JsonProperty("cancelURL")</annotations>
+		</property>
+		<property name="channel" type="String">
+			<annotations>@JsonProperty("channel")</annotations>
+		</property>
+		<property name="browserInfo" type="de.hybris.platform.opf.dto.OPFPaymentBrowserInfo">
+			<annotations>@JsonProperty("browserInfo")</annotations>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.OPFPaymentBrowserInfo">
+		<import type="com.fasterxml.jackson.annotation.JsonProperty"/>
+		<import type="com.fasterxml.jackson.annotation.JsonInclude"/>
+		<annotations>@JsonInclude(JsonInclude.Include.NON_NULL)</annotations>
+		<property name="acceptHeader" type="String">
+			<annotations>@JsonProperty("acceptHeader")</annotations>
+		</property>
+		<property name="colorDepth" type="Integer">
+			<annotations>@JsonProperty("colorDepth")</annotations>
+		</property>
+		<property name="javaEnabled" type="boolean">
+			<annotations>@JsonProperty("javaEnabled")</annotations>
+		</property>
+		<property name="javaScriptEnabled" type="boolean">
+			<annotations>@JsonProperty("javaScriptEnabled")</annotations>
+		</property>
+		<property name="language" type="String">
+			<annotations>@JsonProperty("language")</annotations>
+		</property>
+		<property name="screenHeight" type="Integer">
+			<annotations>@JsonProperty("screenHeight")</annotations>
+		</property>
+		<property name="screenWidth" type="Integer">
+			<annotations>@JsonProperty("screenWidth")</annotations>
+		</property>
+		<property name="userAgent" type="String">
+			<annotations>@JsonProperty("userAgent")</annotations>
+		</property>
+		<property name="timeZoneOffset" type="Integer">
+			<annotations>@JsonProperty("timeZoneOffset")</annotations>
+		</property>
+		<property name="ipAddress" type="String">
+			<annotations>@JsonProperty("ipAddress")</annotations>
+		</property>
+		<property name="originUrl" type="String">
+			<annotations>@JsonProperty("originUrl")</annotations>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.OPFPaymentAttribute">
+		<import type="com.fasterxml.jackson.annotation.JsonProperty"/>
+		<import type="com.fasterxml.jackson.annotation.JsonInclude"/>
+		<annotations>@JsonInclude(JsonInclude.Include.NON_NULL)</annotations>
+		<property name="key" type="String">
+			<annotations>@JsonProperty("key")</annotations>
+		</property>
+		<property name="name" type="String">
+			<annotations>@JsonProperty("name")</annotations>
+		</property>
+		<property name="value" type="Object">
+			<annotations>@JsonProperty("value")</annotations>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.OPFPaymentDestination">
+		<import type="com.fasterxml.jackson.annotation.JsonProperty"/>
+		<import type="com.fasterxml.jackson.annotation.JsonInclude"/>
+		<annotations>@JsonInclude(JsonInclude.Include.NON_NULL)</annotations>
+		<property name="url" type="String">
+			<annotations>@JsonProperty("url")</annotations>
+		</property>
+		<property name="method" type="String">
+			<annotations>@JsonProperty("method")</annotations>
+		</property>
+		<property name="contentType" type="String">
+			<annotations>@JsonProperty("contentType")</annotations>
+		</property>
+		<property name="body" type="java.lang.Object">
+			<annotations>@JsonProperty("body")</annotations>
+		</property>
+		<property name="form" type="java.util.List&lt;de.hybris.platform.opf.dto.OPFPaymentAttribute&gt;">
+			<annotations>@JsonProperty("form")</annotations>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.OPFPaymentUrls">
+		<import type="com.fasterxml.jackson.annotation.JsonProperty"/>
+		<import type="com.fasterxml.jackson.annotation.JsonInclude"/>
+		<annotations>@JsonInclude(JsonInclude.Include.NON_NULL)</annotations>
+		<property name="url" type="String">
+			<annotations>@JsonProperty("url")</annotations>
+		</property>
+		<property name="sri" type="String">
+			<annotations>@JsonProperty("sri")</annotations>
+		</property>
+		<property name="attributes" type="java.util.List&lt;de.hybris.platform.opf.dto.OPFPaymentAttribute&gt;">
+			<annotations>@JsonProperty("attributes")</annotations>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.OPFDynamicScript">
+		<import type="com.fasterxml.jackson.annotation.JsonProperty"/>
+		<import type="com.fasterxml.jackson.annotation.JsonInclude"/>
+		<annotations>@JsonInclude(JsonInclude.Include.NON_NULL)</annotations>
+		<property name="html" type="String">
+			<annotations>@JsonProperty("html")</annotations>
+		</property>
+		<property name="cssUrls" type="java.util.List&lt;de.hybris.platform.opf.dto.OPFPaymentUrls&gt;">
+			<annotations>@JsonProperty("cssUrls")</annotations>
+		</property>
+		<property name="jsUrls" type="java.util.List&lt;de.hybris.platform.opf.dto.OPFPaymentUrls&gt;">
+			<annotations>@JsonProperty("jsUrls")</annotations>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.OPFInitiatePaymentSessionResponse">
+		<import type="com.fasterxml.jackson.annotation.JsonProperty"/>
+		<import type="com.fasterxml.jackson.annotation.JsonInclude"/>
+		<annotations>@JsonInclude(JsonInclude.Include.NON_NULL)</annotations>
+		<property name="pattern" type="String">
+			<annotations>@JsonProperty("pattern")</annotations>
+		</property>
+		<property name="paymentSessionId" type="String">
+			<annotations>@JsonProperty("paymentSessionId")</annotations>
+		</property>
+		<property name="paymentIntent" type="long">
+			<annotations>@JsonProperty("paymentIntent")</annotations>
+		</property>
+		<property name="relayResultUrl" type="String">
+			<annotations>@JsonProperty("relayResultUrl")</annotations>
+		</property>
+		<property name="relayCancelUrl" type="String">
+			<annotations>@JsonProperty("relayCancelUrl")</annotations>
+		</property>
+		<property name="destination" type="de.hybris.platform.opf.dto.OPFPaymentDestination">
+			<annotations>@JsonProperty("destination")</annotations>
+		</property>
+		<property name="dynamicScript" type="de.hybris.platform.opf.dto.OPFDynamicScript">
+			<annotations>@JsonProperty("dynamicScript")</annotations>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.request.OPFPaymentSubmitRequest">
+		<property name="paymentSessionId" type="String"/>
+		<property name="order" type="de.hybris.platform.opf.data.OPFOrderData"/>
+		<property name="channel" type="String"/>
+		<property name="browserInfo" type="de.hybris.platform.opf.data.OPFPaymentBrowserInfoData"/>
+		<property name="additionalData" type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentAttributeData>"/>
+		<property name="orderPaymentId" type="String"/>
+		<property name="encryptedToken" type="String"/>
+		<property name="paymentMethod" type="String"/>
+		<property name="clientId" type="String"/>
+		<property name="publicKey" type="String"/>
+	</bean>
+
+	<bean class="de.hybris.platform.data.request.OPFPaymentAddressData">
+		<property name="firstName" type="String"/>
+		<property name="lastName" type="String"/>
+		<property name="emailAddress" type="String"/>
+		<property name="addressLine1" type="String"/>
+		<property name="city" type="String"/>
+		<property name="zip" type="String"/>
+		<property name="country" type="String"/>
+		<property name="state" type="String"/>
+		<property name="phoneNumber" type="String"/>
+	</bean>
+
+
+	<bean class="de.hybris.platform.data.request.OPFBrowserInfoData">
+		<property name="colorDepth" type="Integer"/>
+		<property name="acceptHeader" type="String"/>
+		<property name="javaEnabled" type="boolean"/>
+		<property name="javaScriptEnabled" type="boolean"/>
+		<property name="screenHeight" type="Integer"/>
+		<property name="screenWidth" type="Integer"/>
+		<property name="userAgent" type="String"/>
+		<property name="language" type="String"/>
+		<property name="timeZoneOffset" type="Integer"/>
+		<property name="ipAddress" type="String"/>
+		<property name="originUrl" type="String"/>
+	</bean>
+	<bean class="de.hybris.platform.opf.data.request.OPFAdditionalData">
+		<property name="key" type="String"/>
+		<property name="value" type="Object"/>
+	</bean>
+	<bean class="de.hybris.platform.opf.data.response.OPFPaymentSubmitResponse">
+		<property name="orderPaymentId" type="String"/>
+		<property name="status" type="String"/>
+		<property name="reasonCode" type="Integer"/>
+		<property name="paymentSessionId" type="String"/>
+		<property name="paymentMethod" type="String"/>
+		<property name="authorizedAmount" type="Double"/>
+		<property name="customFields" type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentAttributeData>"/>
+	</bean>
+	<bean class="de.hybris.platform.opf.dto.OPFPaymentVerifyRequest">
+		<property name="paymentSessionId" type="String"/>
+		<property name="divisionId" type="String"/>
+		<property name="responseMap" type="java.util.List&lt;de.hybris.platform.opf.data.request.OPFAdditionalData>"/>
+	</bean>
+	<bean class="de.hybris.platform.opf.dto.OPFPaymentVerifyResponse">
+		<property name="result" type="String"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteRequest">
+        <import type="com.fasterxml.jackson.annotation.JsonProperty"/>
+        <import type="com.fasterxml.jackson.annotation.JsonInclude"/>
+        <annotations>@JsonInclude(JsonInclude.Include.NON_NULL)</annotations>
+        <property name="additionalData" type="java.util.List&lt;de.hybris.platform.opf.dto.OPFPaymentAttribute>">
+            <annotations>@JsonProperty("additionalData")</annotations>
+        </property>
+        <property name="paymentSessionId" type="String">
+            <annotations>@JsonProperty("paymentSessionId")</annotations>
+        </property>
+    </bean>
+
+    <bean class="de.hybris.platform.opf.data.OPFPaymentSubmitCompleteRequestData">
+        <property name="additionalData" type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentAttributeData>"/>
+        <property name="paymentSessionId" type="String"/>
+        <property name="order" type="de.hybris.platform.opf.data.OPFOrderData"/>
+    </bean>
+
+    <bean class="de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteResponse">
+        <import type="com.fasterxml.jackson.annotation.JsonProperty"/>
+        <import type="com.fasterxml.jackson.annotation.JsonInclude"/>
+        <annotations>@JsonInclude(JsonInclude.Include.NON_NULL)</annotations>
+        <property name="orderPaymentId" type="String">
+            <annotations>@JsonProperty("orderPaymentId")</annotations>
+        </property>
+        <property name="status" type="String">
+            <annotations>@JsonProperty("status")</annotations>
+        </property>
+        <property name="reasonCode" type="String">
+            <annotations>@JsonProperty("reasonCode")</annotations>
+        </property>
+        <property name="customFields" type="java.util.List&lt;de.hybris.platform.opf.dto.OPFPaymentAttribute>">
+            <annotations>@JsonProperty("customFields")</annotations>
+        </property>
+		<property name="paymentSessionId" type="String"/>
+    </bean>
+
+    <bean class="de.hybris.platform.opf.data.OPFPaymentSubmitCompleteResponseData">
+        <property name="orderPaymentId" type="String"/>
+        <property name="status" type="String"/>
+        <property name="reasonCode" type="String"/>
+        <property name="customFields" type="java.util.List&lt;de.hybris.platform.opf.data.OPFPaymentAttributeData>"/>
+		<property name="paymentSessionId" type="String"/>
+    </bean>
+
+	<bean class="de.hybris.platform.opf.dto.user.AddressWsDTO">
+		<description>Request body fields required and optional to operate on address data. The DTO is in XML or .json format</description>
+		<hints>
+			<hint name="wsRelated"/>
+			<hint name="alias">Address</hint>
+		</hints>
+		<property name="id" type="String">
+			<description>Unique id value of the address which is optional while creating new address. While performing other address operations this value is the key</description>
+		</property>
+		<property name="title" type="String">
+			<description>Title of the address person</description>
+			<hints>
+				<hint name="example">Mr.</hint>
+			</hints>
+		</property>
+		<property name="titleCode" type="String">
+			<description>Code of the title</description>
+			<hints>
+				<hint name="required">true</hint>
+				<hint name="example">MR</hint>
+			</hints>
+		</property>
+		<property name="firstName" type="String">
+			<description>First name of the address person</description>
+			<hints>
+				<hint name="required">true</hint>
+				<hint name="example">John</hint>
+			</hints>
+		</property>
+		<property name="lastName" type="String">
+			<description>Last name of the address person</description>
+			<hints>
+				<hint name="required">true</hint>
+				<hint name="example">Doe</hint>
+			</hints>
+		</property>
+		<property name="companyName" type="String">
+			<description>Company Name</description>
+			<hints>
+				<hint name="example">Global Corp.</hint>
+			</hints>
+		</property>
+		<property name="line1" type="String">
+			<description>First line of the address</description>
+			<hints>
+				<hint name="required">true</hint>
+				<hint name="example">123 Main Street</hint>
+			</hints>
+		</property>
+		<property name="line2" type="String">
+			<description>Second line of the address</description>
+			<hints>
+				<hint name="example">Garden Level</hint>
+			</hints>
+		</property>
+		<property name="town" type="String">
+			<description>Town, field required</description>
+			<hints>
+				<hint name="required">true</hint>
+				<hint name="example">New York City</hint>
+			</hints>
+		</property>
+		<property name="region" type="de.hybris.platform.opf.dto.user.RegionWsDTO">
+			<description>Region where address belongs to</description>
+		</property>
+		<property name="district" type="String">
+			<description>District name</description>
+			<hints>
+				<hint name="example">8th</hint>
+			</hints>
+		</property>
+		<property name="postalCode" type="String">
+			<description>Postal code of the address</description>
+			<hints>
+				<hint name="required">true</hint>
+				<hint name="example">10001</hint>
+			</hints>
+		</property>
+		<property name="phone" type="String">
+			<description>Phone number</description>
+			<hints>
+				<hint name="example">+1 (123) 456-7890</hint>
+			</hints>
+		</property>
+		<property name="cellphone" type="String">
+			<description>Cellphone number</description>
+			<hints>
+				<hint name="example">+1 (123) 456-7890</hint>
+			</hints>
+		</property>
+		<property name="email" type="String">
+			<description>Email address</description>
+			<hints>
+				<hint name="example">johndoe@domain.com</hint>
+			</hints>
+		</property>
+		<property name="country" type="de.hybris.platform.opf.dto.user.CountryWsDTO">
+			<description>Country where address is located</description>
+		</property>
+		<property name="shippingAddress" type="boolean">
+			<description>Boolean flag if address is for shipping</description>
+		</property>
+		<property name="defaultAddress" type="boolean">
+			<description>Boolean flag if address is default</description>
+		</property>
+		<property name="visibleInAddressBook" type="boolean">
+			<description>Boolean flag if address is visible in the Address Book</description>
+		</property>
+		<property name="formattedAddress" type="String">
+			<description>Boolean flag if address is formatted</description>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.user.CountryWsDTO">
+		<property name="isocode" type="String"/>
+		<property name="name" type="String"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.user.RegionWsDTO">
+		<property name="isocode" type="String"/>
+		<property name="isocodeShort" type="String"/>
+		<property name="countryIso" type="String"/>
+		<property name="name" type="String"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.error.ErrorData">
+		<description>Error message</description>
+		<property name="type" type="String">
+			<description>Type of the error e.g. 'LowStockError'.</description>
+		</property>
+		<property name="message" type="String">
+			<description>Descriptive, human readable error message.</description>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.error.ErrorListData">
+		<description>List of errors</description>
+		<property name="errors" type="java.util.List&lt;de.hybris.platform.opf.dto.error.ErrorData>"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.dto.SAPGuestUserRequestDTO">
+		<description>Representation of information of a guest user</description>
+		<property name="email" type="String">
+			<description>Email of the guest user. It will be used during the guest checkout process but may be optional when creating a guest user for a cart.</description>
+		</property>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.request.OPFApplePayRequest">
+		<property name="divisionId" type="String"/>
+		<property name="validationUrl" type="String"/>
+		<property name="initiative" type="String"/>
+		<property name="initiativeContext" type="String"/>
+	</bean>
+
+	<bean class="de.hybris.platform.opf.data.response.OPFApplePayResponse">
+	    <property name="epochTimestamp" type="String"/>
+	    <property name="expiresAt" type="String"/>
+	    <property name="merchantSessionIdentifier" type="String"/>
+		<property name="nonce" type="String"/>
+		<property name="merchantIdentifier" type="String"/>
+		<property name="domainName" type="String"/>
+		<property name="displayName" type="String"/>
+		<property name="signature" type="String"/>
+	</bean>
+	</beans>
