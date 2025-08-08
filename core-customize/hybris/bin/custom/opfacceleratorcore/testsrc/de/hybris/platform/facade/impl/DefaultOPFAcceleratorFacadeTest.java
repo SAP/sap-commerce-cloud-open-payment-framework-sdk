@@ -15,7 +15,7 @@ import de.hybris.platform.opf.dto.OPFInitiatePaymentSessionRequest;
 import de.hybris.platform.opf.dto.OPFInitiatePaymentSessionResponse;
 import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteRequest;
 import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteResponse;
-import de.hybris.platform.service.OPFAcceleratorPaymentService;
+import de.hybris.platform.service.OPFAcceleratorService;
 import de.hybris.platform.servicelayer.dto.converter.Converter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,13 +30,13 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class DefaultOPFAcceleratorPaymentFacadeTest {
+public class DefaultOPFAcceleratorFacadeTest {
 
     @InjectMocks
-    private DefaultOPFAcceleratorPaymentFacade paymentFacade;
+    private DefaultOPFAcceleratorFacade paymentFacade;
 
     @Mock
-    private OPFAcceleratorPaymentService opfAcceleratorPaymentService;
+    private OPFAcceleratorService opfAcceleratorService;
 
     @Mock
     private Converter<CTARequestDTO, OPFPaymentCTARequest> opfAcceleratorCTARequestConverter;
@@ -77,14 +77,14 @@ public class DefaultOPFAcceleratorPaymentFacadeTest {
     @Test
     public void getCTAResponseReturnsPopulatedResponseWhenRequestAndServiceResponseAreValid() {
         Mockito.when(opfAcceleratorCTARequestConverter.convert(ctaRequestWsDTO, opfPaymentCTARequest)).thenReturn(opfPaymentCTARequest);
-        Mockito.when(opfAcceleratorPaymentService.getCTAResponse(opfPaymentCTARequest)).thenReturn(opfPaymentCTAResponse);
+        Mockito.when(opfAcceleratorService.getCTAResponse(opfPaymentCTARequest)).thenReturn(opfPaymentCTAResponse);
         Mockito.when(opfAcceleratorCTAResponseConverter.convert(opfPaymentCTAResponse, ctaResponseWsDTO)).thenReturn(ctaResponseWsDTO);
 
         CTAResponseDTO result = paymentFacade.getCTAResponse(ctaRequestWsDTO);
 
         Assertions.assertNotNull(result);
         Mockito.verify(opfAcceleratorCTARequestConverter).convert(ctaRequestWsDTO, opfPaymentCTARequest);
-        Mockito.verify(opfAcceleratorPaymentService).getCTAResponse(opfPaymentCTARequest);
+        Mockito.verify(opfAcceleratorService).getCTAResponse(opfPaymentCTARequest);
         Mockito.verify(opfAcceleratorCTAResponseConverter).convert(opfPaymentCTAResponse, ctaResponseWsDTO);
     }
 
@@ -93,19 +93,19 @@ public class DefaultOPFAcceleratorPaymentFacadeTest {
         CTAResponseDTO result = paymentFacade.getCTAResponse(null);
 
         Assertions.assertNotNull(result);
-        Mockito.verifyNoInteractions(opfAcceleratorCTARequestConverter, opfAcceleratorPaymentService, opfAcceleratorCTAResponseConverter);
+        Mockito.verifyNoInteractions(opfAcceleratorCTARequestConverter, opfAcceleratorService, opfAcceleratorCTAResponseConverter);
     }
 
     @Test
     public void getCTAResponseReturnsEmptyResponseWhenServiceResponseIsNull() {
         Mockito.when(opfAcceleratorCTARequestConverter.convert(ctaRequestWsDTO, opfPaymentCTARequest)).thenReturn(opfPaymentCTARequest);
-        Mockito.when(opfAcceleratorPaymentService.getCTAResponse(opfPaymentCTARequest)).thenReturn(null);
+        Mockito.when(opfAcceleratorService.getCTAResponse(opfPaymentCTARequest)).thenReturn(null);
 
         CTAResponseDTO result = paymentFacade.getCTAResponse(ctaRequestWsDTO);
 
         Assertions.assertNotNull(result);
         Mockito.verify(opfAcceleratorCTARequestConverter).convert(ctaRequestWsDTO, opfPaymentCTARequest);
-        Mockito.verify(opfAcceleratorPaymentService).getCTAResponse(opfPaymentCTARequest);
+        Mockito.verify(opfAcceleratorService).getCTAResponse(opfPaymentCTARequest);
         Mockito.verifyNoInteractions(opfAcceleratorCTAResponseConverter);
     }
 
@@ -116,7 +116,7 @@ public class DefaultOPFAcceleratorPaymentFacadeTest {
 
         Assertions.assertThrows(RuntimeException.class, () -> paymentFacade.getCTAResponse(ctaRequestWsDTO));
         Mockito.verify(opfAcceleratorCTARequestConverter).convert(ctaRequestWsDTO, opfPaymentCTARequest);
-        Mockito.verifyNoInteractions(opfAcceleratorPaymentService, opfAcceleratorCTAResponseConverter);
+        Mockito.verifyNoInteractions(opfAcceleratorService, opfAcceleratorCTAResponseConverter);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class DefaultOPFAcceleratorPaymentFacadeTest {
                     return null;
                 }).when(requestConverter)
                 .convert(Mockito.any(OPFInitiatePaymentSessionRequest.class), Mockito.any(OPFInitiatePaymentSessionRequestData.class));
-        Mockito.when(opfAcceleratorPaymentService.getInitiatePaymentResponse(Mockito.any(OPFInitiatePaymentSessionRequestData.class)))
+        Mockito.when(opfAcceleratorService.getInitiatePaymentResponse(Mockito.any(OPFInitiatePaymentSessionRequestData.class)))
                 .thenReturn(response);
         Mockito.doAnswer(invocation -> {
             OPFInitiatePaymentSessionResponse src = invocation.getArgument(0);
@@ -136,14 +136,14 @@ public class DefaultOPFAcceleratorPaymentFacadeTest {
         }).when(responseConverter).convert(Mockito.any(OPFInitiatePaymentSessionResponse.class), Mockito.any(OPFInitiatePaymentData.class));
         OPFInitiatePaymentData actual = paymentFacade.getInitiatePaymentResponse(paymentRequest);
         Assertions.assertNotNull(actual);
-        Mockito.verify(opfAcceleratorPaymentService).getInitiatePaymentResponse(Mockito.any(OPFInitiatePaymentSessionRequestData.class));
+        Mockito.verify(opfAcceleratorService).getInitiatePaymentResponse(Mockito.any(OPFInitiatePaymentSessionRequestData.class));
     }
 
     @Test
     void testGetInitiatePaymentResponse_withNullRequest_shouldReturnEmptyData() {
         OPFInitiatePaymentData result = paymentFacade.getInitiatePaymentResponse(null);
         Assertions.assertNotNull(result);
-        Mockito.verifyNoInteractions(requestConverter, opfAcceleratorPaymentService, responseConverter);
+        Mockito.verifyNoInteractions(requestConverter, opfAcceleratorService, responseConverter);
     }
 
     @Test
@@ -164,14 +164,14 @@ public class DefaultOPFAcceleratorPaymentFacadeTest {
         paymentSubmitCompleteResponse.setStatus("COMPLETED");
 
         // Mock service call
-        Mockito.when(opfAcceleratorPaymentService.getCompletedPaymentResponse(Mockito.any())).thenReturn(paymentSubmitCompleteResponse);
+        Mockito.when(opfAcceleratorService.getCompletedPaymentResponse(Mockito.any())).thenReturn(paymentSubmitCompleteResponse);
 
         // Act
         OPFPaymentSubmitCompleteResponseData actualResponse = paymentFacade.getCompletedPaymentResponse(inputRequest);
 
         // Assert
         Assertions.assertNotNull(actualResponse);
-        Mockito.verify(opfAcceleratorPaymentService).getCompletedPaymentResponse(Mockito.any());
+        Mockito.verify(opfAcceleratorService).getCompletedPaymentResponse(Mockito.any());
     }
 
     @Test
@@ -182,7 +182,7 @@ public class DefaultOPFAcceleratorPaymentFacadeTest {
         opfPaymentSubmitCompleteResponse.setOrderPaymentId(null);  // Invalid case
         opfPaymentSubmitCompleteResponse.setStatus("");            // Invalid case
         // Mock service call
-        Mockito.when(opfAcceleratorPaymentService.getCompletedPaymentResponse(Mockito.any())).thenReturn(opfPaymentSubmitCompleteResponse);
+        Mockito.when(opfAcceleratorService.getCompletedPaymentResponse(Mockito.any())).thenReturn(opfPaymentSubmitCompleteResponse);
 
         // Act
         OPFPaymentSubmitCompleteResponseData actualResponse = paymentFacade.getCompletedPaymentResponse(inputRequest);

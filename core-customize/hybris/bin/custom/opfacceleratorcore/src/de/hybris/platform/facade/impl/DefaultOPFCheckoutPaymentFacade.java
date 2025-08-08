@@ -16,6 +16,10 @@ import de.hybris.platform.order.CartService;
 import javax.annotation.Resource;
 import java.util.Optional;
 
+
+/**
+ * Default implementation of {@link OPFCheckoutPaymentFacade}
+ */
 public class DefaultOPFCheckoutPaymentFacade extends DefaultCheckoutPaymentFacade implements OPFCheckoutPaymentFacade {
     @Resource(name = "cartService")
     private CartService cartService;

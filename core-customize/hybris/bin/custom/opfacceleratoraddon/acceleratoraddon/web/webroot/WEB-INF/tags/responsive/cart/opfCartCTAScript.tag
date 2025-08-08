@@ -4,4 +4,3 @@
 
 <input type="hidden" name="cta-script-context" value="CART_MESSAGING" />
 <div id="opf-cta-script"></div>
-

@@ -14,20 +14,19 @@ import de.hybris.platform.commercefacades.order.data.DeliveryModesData;
 import de.hybris.platform.commercefacades.user.UserFacade;
 import de.hybris.platform.commercefacades.user.data.AddressData;
 import de.hybris.platform.commercefacades.user.data.CustomerData;
-import de.hybris.platform.commerceservices.customer.DuplicateUidException;
 import de.hybris.platform.commercewebservicescommons.dto.order.SAPGuestUserRequestWsDTO;
-import de.hybris.platform.facade.OPFAcceleratorPaymentFacade;
-import de.hybris.platform.facade.OPFAddressFacade;
+
+import de.hybris.platform.facade.OPFAcceleratorFacade;
 import de.hybris.platform.facade.OPFCheckoutPaymentFacade;
 import de.hybris.platform.opf.dto.SAPGuestUserRequestDTO;
 import de.hybris.platform.opf.dto.user.AddressWsDTO;
 import de.hybris.platform.opfacceleratoraddon.exception.OPFAcceleratorException;
-import de.hybris.platform.opfacceleratoraddon.util.OPFAcceleratorUtil;
+import de.hybris.platform.opfacceleratoraddon.exception.OPFRequestValidationException;
 import de.hybris.platform.opfacceleratoraddon.validation.OPFAddressValidator;
 import de.hybris.platform.opfacceleratoraddon.validation.OPFDeliveryAddressValidator;
 import de.hybris.platform.opfacceleratoraddon.validation.OPFGuestValidator;
 import de.hybris.platform.servicelayer.exceptions.ModelSavingException;
-import de.hybris.platform.webservicescommons.dto.error.ErrorListWsDTO;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,9 +39,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
-
-import static de.hybris.platform.util.Sanitizer.sanitize;
 
 @Controller
 @RequestMapping(value = "/opf/cart")
@@ -53,8 +49,6 @@ public class OPFCartController extends AbstractPageController {
     private CheckoutFacade checkoutFacade;
     @Resource(name = "opfCheckoutPaymentFacade")
     private OPFCheckoutPaymentFacade opfCheckoutPaymentFacade;
-    @Resource(name = "opfAddressFacade")
-    private OPFAddressFacade opfAddressFacade;
     @Resource(name = "userFacade")
     private UserFacade userFacade;
     @Resource(name = "opfAddressValidator")
@@ -67,8 +61,8 @@ public class OPFCartController extends AbstractPageController {
     private CustomerFacade customerFacade;
     @Resource(name = "cartFacade")
     private CartFacade cartFacade;
-    @Resource(name = "opfAcceleratorPaymentFacade")
-    private OPFAcceleratorPaymentFacade opfAcceleratorPaymentFacade;
+    @Resource(name = "opfAcceleratorFacade")
+    private OPFAcceleratorFacade opfAcceleratorFacade;
     @Resource(name = "sapCheckoutPaymentFacade")
     private CheckoutPaymentFacade checkoutPaymentFacade;
     @Resource(name = "guidCookieStrategy")
@@ -87,14 +81,15 @@ public class OPFCartController extends AbstractPageController {
      */
     @PostMapping(value = "/guestuser", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public  ResponseEntity<Object> createCartGuestUser(@RequestBody(required = false) final SAPGuestUserRequestDTO guestUser){
-        if (getUserFacade().isAnonymousUser()) {
-            try {
+    public ResponseEntity<Object> createCartGuestUser(@RequestBody(required = false) final SAPGuestUserRequestDTO guestUser) {
+        try {
+            
+            if (getUserFacade().isAnonymousUser()) {
                 customerFacade.createGuestUserForCheckout(null, DEFAULT_GUEST_USER_NAME);
                 return ResponseEntity.status(HttpStatus.CREATED).build();
-            } catch (Exception e) {
-                throw new OPFAcceleratorException(String.format("Failed to save QuickBuy guest user profile: %s", guestUser.getEmail()), e);
             }
+        } catch (Exception e) {
+            throw new OPFAcceleratorException(String.format("Failed to save QuickBuy guest user profile: %s", guestUser.getEmail()), e);
         }
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -126,9 +121,9 @@ public class OPFCartController extends AbstractPageController {
         guestCustomerData.setSapGuestUserEmail(guestUser.getEmail());
         Errors errors = new BeanPropertyBindingResult(guestCustomerData, "guestCustomerData");
         opfGuestValidator.validate(guestCustomerData, errors);
-        Map<String, Object> errorList = OPFAcceleratorUtil.handleErrors(errors);
-        if (!errorList.isEmpty()) {
-            return ResponseEntity.badRequest().body(errorList);
+        if (errors.hasErrors())
+        {
+            throw new OPFRequestValidationException("Some required fields are missing or contain errors",errors);
         }
         try {
             customerFacade.updateGuestUserProfile(guestCustomerData);
@@ -162,12 +157,12 @@ public class OPFCartController extends AbstractPageController {
     @PostMapping(value = "/addresses/delivery", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> createCartAddress(@RequestBody final AddressWsDTO address) {
-        AddressData addressData = opfAddressFacade.mapAddressWsDTOToAddressData(address);
+        AddressData addressData = opfAcceleratorFacade.mapAddressWsDTOToAddressData(address);
         final Errors errors = new BeanPropertyBindingResult(addressData, "addressData");
         opfAddressValidator.validate(addressData, errors);
-        Map<String, Object> errorList = OPFAcceleratorUtil.handleErrors(errors);
-        if (!errorList.isEmpty()) {
-            return ResponseEntity.badRequest().body(errorList);
+        if (errors.hasErrors())
+        {
+            throw new OPFRequestValidationException("Some required fields are missing or contain errors",errors);
         }
         addressData.setShippingAddress(true);
         addressData.setBillingAddress(true);
@@ -178,9 +173,9 @@ public class OPFCartController extends AbstractPageController {
         }
         address.setId(addressData.getId());
         opfDeliveryAddressValidator.validate(addressData, errors);
-        errorList = OPFAcceleratorUtil.handleErrors(errors);
-        if (!errorList.isEmpty()) {
-            return ResponseEntity.badRequest().body(errorList);
+        if (errors.hasErrors())
+        {
+            throw new OPFRequestValidationException("Some required fields are missing or contain errors",errors);
         }
         // For Quick Buy, same address to be used for delivery and billing address
         checkoutFacade.setDeliveryAddress(addressData);
@@ -208,13 +203,12 @@ public class OPFCartController extends AbstractPageController {
     @ResponseStatus(HttpStatus.CREATED)
     public void setCartPaymentInfo() {
         try{
-            opfAcceleratorPaymentFacade.setPaymentInfoOnCart();
+            opfAcceleratorFacade.setPaymentInfoOnCart();
             checkoutFacade.prepareCartForCheckout();
         }catch(Exception ex){
             throw new OPFAcceleratorException("Failed to set payment info", ex);
         }
     }
-
 
     /**
      * Sets or replaces the delivery mode for the current cart.
@@ -227,16 +221,16 @@ public class OPFCartController extends AbstractPageController {
     @PutMapping(value = "/deliverymode", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public void replaceCartDeliveryMode(@RequestParam(required = true) final String deliveryModeId) {
-        if (!checkoutFacade.setDeliveryMode(deliveryModeId)) {
+        try {
+            if (StringUtils.isEmpty(deliveryModeId)) {
+                throw new OPFRequestValidationException("Some required fields are missing or contain errors");
+            }
+            if (!checkoutFacade.setDeliveryMode(deliveryModeId)) {
+                throw new OPFAcceleratorException(String.format("Failed to set delivery mode with ID: %s", deliveryModeId));
+            }
+        } catch (Exception e) {
             throw new OPFAcceleratorException(String.format("Failed to set delivery mode with ID: %s", deliveryModeId));
         }
     }
-
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
-    @ExceptionHandler({ OPFAcceleratorException.class })
-    public ErrorListWsDTO handleOpfCheckoutException(final Throwable ex) {
-        LOG.error(sanitize(ex.getMessage()), ex);
-        return OPFAcceleratorUtil.handleErrorInternal(ex);
-    }
 }
+

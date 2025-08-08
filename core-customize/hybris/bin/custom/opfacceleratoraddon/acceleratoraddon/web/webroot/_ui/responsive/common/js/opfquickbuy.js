@@ -10,22 +10,27 @@
  */
 
 // Start the fetch of active configs and initialize Quick Buy with first enabled provider.
-OpfApis.fetchActiveConfigs()
-  .then((configs) => {
-    if (!Array.isArray(configs)) {
-      console.error("Configs data is not an array:", configs);
-      return;
-    }
-    const enabledConfig = fetchEnabledQuickBuyProvider(configs);
-    if (!enabledConfig) {
-      console.warn("No enabled quick buy provider config found.");
-      return;
-    }
-    initQuickBuy(enabledConfig);
-  })
-  .catch((error) => {
-    console.error("Failed to fetch active configs:", error);
-  });
+window.addEventListener("DOMContentLoaded", function () {
+  const quickBuyContainer = document.getElementById("cx-opf-quick-buy-buttons");
+  if (quickBuyContainer) {
+    OpfApis.fetchActiveConfigs()
+      .then((configs) => {
+        if (!Array.isArray(configs)) {
+          console.error("Configs data is not an array:", configs);
+          return;
+        }
+        const enabledConfig = fetchEnabledQuickBuyProvider(configs);
+        if (!enabledConfig) {
+          console.warn("No enabled quick buy provider config found.");
+          return;
+        }
+        initQuickBuy(enabledConfig);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch active configs:", error);
+      });
+  }
+});
 
 /**
  * Initialize the Quick Buy workflow for each enabled digital wallet provider.

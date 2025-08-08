@@ -41,10 +41,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class DefaultOPFAcceleratorPaymentServiceTest {
+public class DefaultOPFAcceleratorServiceTest {
     @Spy
     @InjectMocks
-    private DefaultOPFAcceleratorPaymentService paymentService;
+    private DefaultOPFAcceleratorService paymentService;
 
     @Mock
     private OPFHttpClient opfHttpClient;

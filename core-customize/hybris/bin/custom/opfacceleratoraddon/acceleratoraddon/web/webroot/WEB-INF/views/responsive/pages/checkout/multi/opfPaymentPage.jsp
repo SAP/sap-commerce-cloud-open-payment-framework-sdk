@@ -15,7 +15,7 @@
 <template:page pageTitle="${pageTitle}" hideHeaderLinks="true">
 
 <!-- Displays a loading indicator during page processing -->
-<common:pageLoader />
+<common:opfPageLoader />
 
 <div class="row">
     <!-- Opf Global Error Placeholder -->

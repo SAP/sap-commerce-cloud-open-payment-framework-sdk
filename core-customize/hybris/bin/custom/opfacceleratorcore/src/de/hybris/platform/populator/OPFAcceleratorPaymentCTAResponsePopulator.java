@@ -21,6 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Populator implementation for converting an OPFPaymentCTAResponse to a CTAResponseDTO.
+ * This class handles the mapping of data between the source and target objects.
+ */
 public class OPFAcceleratorPaymentCTAResponsePopulator implements Populator<OPFPaymentCTAResponse, CTAResponseDTO> {
     @Override
     public void populate(OPFPaymentCTAResponse source, CTAResponseDTO target) throws ConversionException {
@@ -39,6 +43,12 @@ public class OPFAcceleratorPaymentCTAResponsePopulator implements Populator<OPFP
         }
     }
 
+    /**
+     * Populates a list of CTAUrlDataDTO objects from a list of OPFPaymentCTAUrlsData objects.
+     *
+     * @param ctaUrlsList The list of OPFPaymentCTAUrlsData objects to be converted.
+     * @return A list of CTAUrlDataDTO objects containing the mapped data.
+     */
     private List<CTAUrlDataDTO> populateUrlData(List<OPFPaymentCTAUrlsData> ctaUrlsList) {
         List<CTAUrlDataDTO> ctaUrlDataWsDTOList = new ArrayList<>();
         if (CollectionUtils.isEmpty(ctaUrlsList)) {

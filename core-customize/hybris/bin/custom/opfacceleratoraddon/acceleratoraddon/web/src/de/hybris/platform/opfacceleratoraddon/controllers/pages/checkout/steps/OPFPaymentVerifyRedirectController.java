@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2025 SAP SE or an SAP affiliate company. All rights reserved.
+ */
 package de.hybris.platform.opfacceleratoraddon.controllers.pages.checkout.steps;
 
 import com.opf.dto.verify.OPFPaymentVerifyRequestDTO;
@@ -5,26 +8,23 @@ import de.hybris.platform.acceleratorstorefrontcommons.annotations.RequireHardLo
 import de.hybris.platform.acceleratorstorefrontcommons.controllers.pages.AbstractCheckoutController;
 import de.hybris.platform.cms2.exceptions.CMSItemNotFoundException;
 import de.hybris.platform.cms2.model.pages.ContentPageModel;
-import de.hybris.platform.controllers.OpfacceleratoraddonControllerConstants;
-import de.hybris.platform.facade.OPFAcceleratorPaymentFacade;
+import de.hybris.platform.facade.OPFAcceleratorFacade;
 import de.hybris.platform.opf.dto.OPFPaymentAttribute;
 import de.hybris.platform.opf.dto.OPFPaymentVerifyResponse;
+import de.hybris.platform.opfacceleratoraddon.controllers.OpfacceleratoraddonControllerConstants;
 import de.hybris.platform.opfacceleratoraddon.exception.OPFAcceleratorException;
-import de.hybris.platform.opfacceleratoraddon.util.OPFAcceleratorUtil;
-import de.hybris.platform.opfservices.client.CCAdapterClientException;
-import de.hybris.platform.webservicescommons.dto.error.ErrorListWsDTO;
+import de.hybris.platform.opfacceleratoraddon.exception.OPFRequestValidationException;
 import org.apache.log4j.Logger;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.util.Map;
-
-import static de.hybris.platform.util.Sanitizer.sanitize;
 
 @Controller
 @RequestMapping(value = "/opf/payment-verification-redirect")
@@ -32,8 +32,8 @@ public class OPFPaymentVerifyRedirectController extends AbstractCheckoutControll
     private static final Logger LOG = Logger.getLogger(OPFPaymentVerifyRedirectController.class);
     protected static final String MULTI_CHECKOUT_SUMMARY_CMS_PAGE_LABEL = "multiStepCheckoutSummary";
     private static final String REDIRECT_OPF_PAYMENT = "redirect:/checkout/multi/opf-payment/choose";
-    @Resource(name = "opfAcceleratorPaymentFacade")
-    private OPFAcceleratorPaymentFacade opfAcceleratorPaymentFacade;
+    @Resource(name = "opfAcceleratorFacade")
+    private OPFAcceleratorFacade opfAcceleratorFacade;
 
     /**
      * Handles GET requests to the /result endpoint. This method processes payment verification results by extracting parameters from the
@@ -60,6 +60,9 @@ public class OPFPaymentVerifyRedirectController extends AbstractCheckoutControll
     @GetMapping(value = "/verify")
     public ResponseEntity<?> redirectPayment(@RequestParam Map<String, String> requestMap) {
         try {
+            if (requestMap.isEmpty()) {
+                throw new OPFRequestValidationException("Some required fields are missing or contain errors");
+            }
             OPFPaymentVerifyRequestDTO opfPaymentVerifyRequestDTO = new OPFPaymentVerifyRequestDTO();
             opfPaymentVerifyRequestDTO.setResponseMap(requestMap.entrySet().stream().map(entry -> {
                 OPFPaymentAttribute opfPaymentAttribute = new OPFPaymentAttribute();
@@ -67,9 +70,9 @@ public class OPFPaymentVerifyRedirectController extends AbstractCheckoutControll
                 opfPaymentAttribute.setValue(entry.getValue());
                 return opfPaymentAttribute;
             }).toList());
-            OPFPaymentVerifyResponse response = opfAcceleratorPaymentFacade.verifyPayment(opfPaymentVerifyRequestDTO);
+            OPFPaymentVerifyResponse response = opfAcceleratorFacade.verifyPayment(opfPaymentVerifyRequestDTO);
             return ResponseEntity.ok(response);
-        } catch (CCAdapterClientException exception) {
+        } catch (Exception exception) {
             LOG.error("Error while verifying payment for OPF payments", exception);
             throw new OPFAcceleratorException("Payment verification failed", exception);
         }
@@ -78,14 +81,6 @@ public class OPFPaymentVerifyRedirectController extends AbstractCheckoutControll
     @GetMapping(value = "/cancel")
     public String getPaymentVerificationCancel(final Model model, final RedirectAttributes redirectAttributes) {
         return REDIRECT_OPF_PAYMENT;
-    }
-
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
-    @ExceptionHandler({ OPFAcceleratorException.class })
-    public ErrorListWsDTO handleOpfCheckoutException(final Throwable ex) {
-        LOG.error(sanitize(ex.getMessage()), ex);
-        return OPFAcceleratorUtil.handleErrorInternal(ex);
     }
 }
 

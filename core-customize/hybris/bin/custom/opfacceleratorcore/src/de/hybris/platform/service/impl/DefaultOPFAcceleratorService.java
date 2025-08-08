@@ -18,15 +18,18 @@ import de.hybris.platform.opf.data.request.OPFApplePayRequest;
 import de.hybris.platform.opf.data.request.OPFPaymentSubmitRequest;
 import de.hybris.platform.opf.data.response.OPFApplePayResponse;
 import de.hybris.platform.opf.data.response.OPFPaymentSubmitResponse;
-import de.hybris.platform.opf.dto.*;
+import de.hybris.platform.opf.dto.OPFInitiatePaymentSessionResponse;
+import de.hybris.platform.opf.dto.OPFPaymentAttribute;
+import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteResponse;
+import de.hybris.platform.opf.dto.OPFPaymentVerifyRequest;
+import de.hybris.platform.opf.dto.OPFPaymentVerifyResponse;
 import de.hybris.platform.opfservices.client.CCAdapterClientException;
 import de.hybris.platform.opfservices.dtos.http.HttpClientRequestDto;
 import de.hybris.platform.order.CartService;
 import de.hybris.platform.payment.model.PaymentTransactionModel;
-import de.hybris.platform.service.OPFAcceleratorPaymentService;
+import de.hybris.platform.service.OPFAcceleratorService;
 import de.hybris.platform.servicelayer.config.ConfigurationService;
 import de.hybris.platform.servicelayer.model.ModelService;
-import de.hybris.platform.util.OPFAcceleratorCoreUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -38,7 +41,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 import static de.hybris.platform.servicelayer.util.ServicesUtil.validateParameterNotNullStandardMessage;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -47,9 +55,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 /**
  * Open Payment Framework Accelerator SDK Service Impl
  */
-public class DefaultOPFAcceleratorPaymentService implements OPFAcceleratorPaymentService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultOPFAcceleratorPaymentService.class);
+public class DefaultOPFAcceleratorService implements OPFAcceleratorService {
 
     private static final String OPF_BASE_URL = "opf.base.url";
     private static final String OPF_CTA_URL = "opf.cta.url";
@@ -77,12 +83,11 @@ public class DefaultOPFAcceleratorPaymentService implements OPFAcceleratorPaymen
     /**
      * Constructor for DefaultOPFAcceleratorPaymentService
      *
-     * @param opfHttpClient
-     *         the httpclient
-     * @param configurationService
-     *         configurationService
+     * @param opfHttpClient the httpclient
+     * @param configurationService configurationService
+     * @param checkoutFacade OOTB checkoutFacade
      */
-    public DefaultOPFAcceleratorPaymentService(final OPFHttpClient opfHttpClient, final ConfigurationService configurationService,
+    public DefaultOPFAcceleratorService(final OPFHttpClient opfHttpClient, final ConfigurationService configurationService,
           final CheckoutFacade checkoutFacade) {
         this.opfHttpClient = opfHttpClient;
         this.configurationService = configurationService;
@@ -100,7 +105,6 @@ public class DefaultOPFAcceleratorPaymentService implements OPFAcceleratorPaymen
         final HttpClientRequestDto<OPFPaymentCTAResponse> request = createPostRequest(OPFPaymentCTAResponse.class);
         request.setPath(getConfigurationValueForKey(OPF_CTA_URL));
         request.setRequestBody(opfPaymentCTARequest);
-        LOG.debug("OPF CTA call");
         return opfHttpClient.httpExchange(getConfigurationValueForKey(OPF_BASE_URL), request);
     }
 
@@ -168,7 +172,7 @@ public class DefaultOPFAcceleratorPaymentService implements OPFAcceleratorPaymen
 
     /**
      * Create Payment Transaction Model for initiate API and gateway submit API for Quick Buy
-     * @param paymentSessionId
+     * @param paymentSessionId unique payment session id to be used as code for Payment Transaction
      */
     private void createPaymentTransaction(String paymentSessionId){
 
@@ -303,6 +307,13 @@ public class DefaultOPFAcceleratorPaymentService implements OPFAcceleratorPaymen
         }
     }
 
+    /**
+     * get apple pay web session
+     *
+     * @param opfApplePayRequest opfApplePayRequest
+     * @return {@link OPFApplePayResponse}
+     * @see OPFApplePayResponse
+     */
     @Override
     public OPFApplePayResponse getApplePayWebSession(OPFApplePayRequest opfApplePayRequest) {
         final HttpClientRequestDto<OPFApplePayResponse> request = this.createPostRequest(OPFApplePayResponse.class);

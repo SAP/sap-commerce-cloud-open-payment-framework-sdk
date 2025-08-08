@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 SAP SE or an SAP affiliate company. All rights reserved.
+ * Copyright (c) 2025 SAP SE or an SAP affiliate company. All rights reserved.
  */
 package de.hybris.platform.populator;
 
@@ -36,12 +36,24 @@ public class OPFAcceleratorPaymentSessionRequestPopulator
         target.setOrderPaymentId(cartData.getCode());
     }
 
+    /**
+     * validate source and target
+     *
+     * @param source source
+     * @param target target
+     */
     private void validateSourceAndTarget(OPFInitiatePaymentSessionRequest source, OPFInitiatePaymentSessionRequestData target) {
         if (source == null || target == null) {
             throw new IllegalArgumentException("Source or target cannot be null.");
         }
     }
 
+    /**
+     * populate basic fields
+     *
+     * @param source source
+     * @param target target
+     */
     private void populateBasicFields(OPFInitiatePaymentSessionRequest source, OPFInitiatePaymentSessionRequestData target) {
         if (source != null) {
             if (StringUtils.isNotBlank(source.getAccountId())) {
@@ -56,6 +68,12 @@ public class OPFAcceleratorPaymentSessionRequestPopulator
         }
     }
 
+    /**
+     * populate browser info
+     *
+     * @param source source
+     * @param target target
+     */
     private void populateBrowserInfo(OPFInitiatePaymentSessionRequest source, OPFInitiatePaymentSessionRequestData target) {
         if (source.getBrowserInfo() != null) {
             OPFPaymentBrowserInfoData browserInfo = new OPFPaymentBrowserInfoData();

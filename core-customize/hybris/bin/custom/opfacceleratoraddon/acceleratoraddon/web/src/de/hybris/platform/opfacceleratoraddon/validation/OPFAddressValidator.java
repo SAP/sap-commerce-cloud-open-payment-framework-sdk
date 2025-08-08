@@ -29,11 +29,23 @@ public class OPFAddressValidator implements Validator {
         return AddressData.class.equals(aClass);
     }
 
+    /**
+     * Constructs a new OPFAddressValidator with the specified services.
+     *
+     * @param i18NService The service used for internationalization and locale-specific operations.
+     * @param messageSource The source for resolving messages, supporting internationalization.
+     */
     public OPFAddressValidator(final I18NService i18NService, final MessageSource messageSource) {
         this.i18NService = i18NService;
         this.messageSource = messageSource;
     }
 
+    /**
+     * validate
+     *
+     * @param object object
+     * @param errors errors
+     */
     @Override
     public void validate(final Object object, final Errors errors) {
         final AddressData addressData = (AddressData) object;
@@ -41,6 +53,12 @@ public class OPFAddressValidator implements Validator {
         validateCountrySpecificFields(addressData, errors);
     }
 
+    /**
+     * validate standard fields
+     *
+     * @param addressData addressData
+     * @param errors errors
+     */
     protected void validateStandardFields(final AddressData addressData, final Errors errors) {
         validateStringField(addressData.getCountry().getIsocode(), AddressField.COUNTRY, MAX_FIELD_LENGTH, errors);
         validateStringField(addressData.getFirstName(), AddressField.FIRSTNAME, MAX_FIELD_LENGTH, errors);
@@ -50,6 +68,12 @@ public class OPFAddressValidator implements Validator {
         validateStringField(addressData.getPostalCode(), AddressField.POSTCODE, MAX_POSTCODE_LENGTH, errors);
     }
 
+    /**
+     * validate country specific fields
+     *
+     * @param addressData addressData
+     * @param errors errors
+     */
     protected void validateCountrySpecificFields(final AddressData addressData, final Errors errors) {
         final String isoCode = addressData.getCountry().getIsocode();
         final RegionData regionData = addressData.getRegion();
@@ -76,6 +100,14 @@ public class OPFAddressValidator implements Validator {
         }
     }
 
+    /**
+     * validate string field
+     *
+     * @param addressField addressField
+     * @param fieldType fieldType
+     * @param maxFieldLength maxFieldLength
+     * @param errors errors
+     */
     protected void validateStringField(final String addressField, final AddressField fieldType, final int maxFieldLength,
             final Errors errors) {
         if (addressField == null || StringUtils.isEmpty(addressField) || (StringUtils.length(addressField) > maxFieldLength)) {
@@ -84,6 +116,14 @@ public class OPFAddressValidator implements Validator {
         }
     }
 
+    /**
+     * validate string field length
+     *
+     * @param field field
+     * @param fieldType fieldType
+     * @param maxFieldLength maxFieldLength
+     * @param errors errors
+     */
     protected void validateStringFieldLength(final String field, final AddressField fieldType, final int maxFieldLength,
             final Errors errors) {
         if (StringUtils.isNotEmpty(field) && StringUtils.length(field) > maxFieldLength) {
@@ -92,6 +132,13 @@ public class OPFAddressValidator implements Validator {
         }
     }
 
+    /**
+     * validate field not null
+     *
+     * @param addressField addressField
+     * @param fieldType fieldType
+     * @param errors errors
+     */
     protected void validateFieldNotNull(final String addressField, final AddressField fieldType, final Errors errors) {
         if (addressField == null) {
             String errorMessage = messageSource.getMessage(fieldType.getErrorKey(), null, i18NService.getCurrentLocale());

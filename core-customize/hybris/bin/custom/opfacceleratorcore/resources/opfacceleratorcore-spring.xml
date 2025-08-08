@@ -71,28 +71,17 @@
            <aop:pointcut id="profiledMethods" expression="execution(* *(..))" />
       -->
 
-    <bean id="opfacceleratorcoreSystemSetup" class="de.hybris.platform.setup.OpfacceleratorcoreSystemSetup">
-        <!-- constructor arg injection example -->
-        <constructor-arg ref="opfacceleratorcoreService"/>
-    </bean>
-
-    <bean id="opfacceleratorcoreService" class="de.hybris.platform.service.impl.DefaultOpfacceleratorcoreService">
-        <!-- setter injection example -->
-        <property name="modelService" ref="modelService"/>
-        <property name="mediaService" ref="mediaService"/>
-        <property name="flexibleSearchService" ref="flexibleSearchService"/>
-    </bean>
-
+    <bean id="opfacceleratorcoreSystemSetup" class="de.hybris.platform.setup.OpfacceleratorcoreSystemSetup"/>
 
     <bean id="opfAcceleratorRestTemplate" class="org.springframework.web.client.RestTemplate"/>
 
-    <bean id="opfAcceleratorPaymentService" class="de.hybris.platform.service.impl.DefaultOPFAcceleratorPaymentService">
+    <bean id="opfAcceleratorService" class="de.hybris.platform.service.impl.DefaultOPFAcceleratorService">
         <constructor-arg name="opfHttpClient" ref="opfHttpClient"/>
         <constructor-arg name="configurationService" ref="configurationService"/>
     </bean>
 
-    <bean id="opfAcceleratorPaymentFacade" class="de.hybris.platform.facade.impl.DefaultOPFAcceleratorPaymentFacade">
-        <constructor-arg name="opfAcceleratorPaymentService" ref="opfAcceleratorPaymentService"/>
+    <bean id="opfAcceleratorFacade" class="de.hybris.platform.facade.impl.DefaultOPFAcceleratorFacade">
+        <constructor-arg name="opfAcceleratorService" ref="opfAcceleratorService"/>
         <constructor-arg name="opfAcceleratorCTARequestConverter" ref="opfAcceleratorCTARequestConverter"/>
         <constructor-arg name="opfAcceleratorCTAResponseConverter" ref="opfAcceleratorCTAResponseConverter"/>
         <constructor-arg name="opfAcceleratorActiveConfigResponseConverter"
@@ -344,10 +333,6 @@
 
     <alias name="defaultOPFCheckoutPaymentFacade" alias="opfCheckoutPaymentFacade"/>
     <bean id="defaultOPFCheckoutPaymentFacade" class="de.hybris.platform.facade.impl.DefaultOPFCheckoutPaymentFacade" parent="sapCheckoutPaymentFacade">
-    </bean>
-
-    <alias name="defaultOPFAddressFacade" alias="opfAddressFacade"/>
-    <bean id="defaultOPFAddressFacade" class="de.hybris.platform.facade.impl.DefaultOPFAddressFacade">
     </bean>
 
     <alias name="defaultOpfOrderPaymentInfoPopulator" alias="opfOrderPaymentInfoPopulator"/>

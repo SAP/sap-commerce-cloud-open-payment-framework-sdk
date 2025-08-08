@@ -80,7 +80,10 @@
 		<constructor-arg ref="i18NService"/>
 	</bean>
 	<alias name="defaultOPFOrderCartValidator" alias="opfOrderCartValidator"/>
-	<bean id="defaultOPFOrderCartValidator" class="de.hybris.platform.opfacceleratoraddon.validation.OPFOrderCartValidator"/>
+	<bean id="defaultOPFOrderCartValidator" class="de.hybris.platform.opfacceleratoraddon.validation.OPFOrderCartValidator">
+	<constructor-arg ref="messageSource"/>
+	<constructor-arg ref="i18NService"/>
+	</bean>
 
 	<alias name="defaultOPFGuestValidator" alias="opfGuestValidator"/>
 	<bean id="defaultOPFGuestValidator" class="de.hybris.platform.opfacceleratoraddon.validation.OPFGuestValidator">

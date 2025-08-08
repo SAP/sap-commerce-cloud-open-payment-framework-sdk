@@ -9,9 +9,9 @@
 <template:page pageTitle="${pageTitle}" hideHeaderLinks="true">
 
   <!-- Displays a loading indicator during page processing -->
-  <common:pageLoader />
+  <common:opfPageLoader />
 
-  <p style="text-align: center">
+  <p class="center-text">
     <spring:theme code="checkout.multi.paymentVerificationRedirect.processingPayment"/>
   </p>
 

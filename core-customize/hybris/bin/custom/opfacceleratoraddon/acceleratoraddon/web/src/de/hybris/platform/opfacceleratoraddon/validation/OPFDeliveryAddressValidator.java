@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2025 SAP SE or an SAP affiliate company. All rights reserved.
+ */
 package de.hybris.platform.opfacceleratoraddon.validation;
 
 import de.hybris.platform.commercefacades.user.data.AddressData;
@@ -13,6 +16,10 @@ import org.springframework.validation.Validator;
 
 import java.util.List;
 
+/**
+ *  OPF delivery address validator
+ *
+ */
 public class OPFDeliveryAddressValidator implements Validator {
     private static final String FIELD_REQUIRED = "field.required";
     private static final String DELIVERY_ADDRESS_INVALID = "delivery.address.invalid";
@@ -22,6 +29,14 @@ public class OPFDeliveryAddressValidator implements Validator {
     private final I18NService i18NService;
     private final MessageSource messageSource;
 
+    /**
+     * Constructs a new OPFDeliveryAddressValidator with the specified services.
+     *
+     * @param deliveryService The service used to handle delivery-related operations.
+     * @param cartService The service used to manage cart-related operations.
+     * @param i18NService The service used for internationalization and locale-specific operations.
+     * @param messageSource The source for resolving messages, supporting internationalization.
+     */
     public OPFDeliveryAddressValidator(DeliveryService deliveryService, CartService cartService, I18NService i18NService,
             MessageSource messageSource) {
         this.deliveryService = deliveryService;
@@ -35,6 +50,12 @@ public class OPFDeliveryAddressValidator implements Validator {
         return AddressData.class.isAssignableFrom(clazz);
     }
 
+    /**
+     * validate
+     *
+     * @param target target
+     * @param errors errors
+     */
     @Override
     public void validate(final Object target, final Errors errors) {
         final AddressData addressData = (AddressData) target;

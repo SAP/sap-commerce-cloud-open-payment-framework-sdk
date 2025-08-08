@@ -22,7 +22,7 @@ import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteResponse;
 /**
  * Open Payment Framework Accelerator SDK Service
  */
-public interface OPFAcceleratorPaymentService {
+public interface OPFAcceleratorService {
     /**
      * Get CTA scripting response
      *
@@ -52,9 +52,9 @@ public interface OPFAcceleratorPaymentService {
 
     /**
      * OPF Payment Submit
-     * @param opfPaymentSubmitRequest
-     * @param isQuickBuy
-     * @return
+     * @param opfPaymentSubmitRequest payment submit request data
+     * @param isQuickBuy flag to identify if this submit request is for Quick Buy payments
+     * @return OPFPaymentSubmitResponse Response as received from API
      */
     OPFPaymentSubmitResponse submitPayment(OPFPaymentSubmitRequest opfPaymentSubmitRequest, boolean isQuickBuy);
 

@@ -19,11 +19,21 @@ import de.hybris.platform.util.OPFAcceleratorCoreUtil;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
+/**
+ * Populator implementation for converting an OPFPaymentSubmitRequestDTO to an OPFPaymentSubmitRequest.
+ * This class handles the mapping of data between the source and target objects.
+ */
 public class OPFAcceleratorPaymentSubmitRequestPopulator implements Populator<OPFPaymentSubmitRequestDTO, OPFPaymentSubmitRequest> {
 
     private Converter<AbstractOrderData, OPFOrderData> opfPaymentOrderConverter;
     private CartFacade cartFacade;
 
+    /**
+     * Constructor for OPFAcceleratorPaymentSubmitRequestPopulator.
+     *
+     * @param opfPaymentOrderConverter A converter for transforming AbstractOrderData to OPFOrderData.
+     * @param cartFacade               A facade for accessing cart-related operations.
+     */
     public OPFAcceleratorPaymentSubmitRequestPopulator(
             Converter<AbstractOrderData, OPFOrderData> opfPaymentOrderConverter,
             CartFacade cartFacade) {

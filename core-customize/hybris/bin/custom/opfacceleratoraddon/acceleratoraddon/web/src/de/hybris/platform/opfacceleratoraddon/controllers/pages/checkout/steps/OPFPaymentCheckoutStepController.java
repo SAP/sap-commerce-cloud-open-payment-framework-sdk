@@ -3,8 +3,6 @@
  */
 package de.hybris.platform.opfacceleratoraddon.controllers.pages.checkout.steps;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opf.dto.submit.OPFPaymentSubmitRequestDTO;
 import com.opf.dto.submit.OPFPaymentSubmitResponseDTO;
 import de.hybris.platform.acceleratorstorefrontcommons.annotations.PreValidateCheckoutStep;
@@ -22,9 +20,9 @@ import de.hybris.platform.commercefacades.user.data.CountryData;
 import de.hybris.platform.commercefacades.user.data.RegionData;
 import de.hybris.platform.commerceservices.enums.CountryType;
 import de.hybris.platform.commerceservices.i18n.CommerceCommonI18NService;
-import de.hybris.platform.controllers.OpfacceleratoraddonControllerConstants;
-import de.hybris.platform.facade.OPFAcceleratorPaymentFacade;
-import de.hybris.platform.facade.OPFAddressFacade;
+import de.hybris.platform.opfacceleratoraddon.controllers.OpfacceleratoraddonControllerConstants;
+
+import de.hybris.platform.facade.OPFAcceleratorFacade;
 import de.hybris.platform.facade.OPFCheckoutPaymentFacade;
 import de.hybris.platform.opf.data.OPFInitiatePaymentData;
 import de.hybris.platform.opf.data.OPFPaymentSubmitCompleteResponseData;
@@ -32,11 +30,10 @@ import de.hybris.platform.opf.dto.OPFInitiatePaymentSessionRequest;
 import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteRequest;
 import de.hybris.platform.opf.dto.user.AddressWsDTO;
 import de.hybris.platform.opfacceleratoraddon.exception.OPFAcceleratorException;
-import de.hybris.platform.opfacceleratoraddon.util.OPFAcceleratorUtil;
+import de.hybris.platform.opfacceleratoraddon.exception.OPFRequestValidationException;
+import de.hybris.platform.opfacceleratoraddon.validation.OPFAddressValidator;
 import de.hybris.platform.opfservices.client.CCAdapterClientException;
-
 import de.hybris.platform.util.OPFAcceleratorCoreUtil;
-import de.hybris.platform.webservicescommons.dto.error.ErrorListWsDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.apache.commons.lang3.StringUtils;
@@ -49,25 +46,23 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import de.hybris.platform.opfacceleratoraddon.validation.OPFAddressValidator;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static de.hybris.platform.util.Sanitizer.sanitize;
 
 @Controller
 @RequestMapping(value = "/checkout/multi/opf-payment")
 public class OPFPaymentCheckoutStepController extends AbstractCheckoutStepController {
     private static final Logger LOG = Logger.getLogger(OPFPaymentCheckoutStepController.class);
     private static final String OPF_PAYMENT = "opf-payment";
-    @Resource(name = "opfAcceleratorPaymentFacade")
-    private OPFAcceleratorPaymentFacade opfAcceleratorPaymentFacade;
+    @Resource(name = "opfAcceleratorFacade")
+    private OPFAcceleratorFacade opfAcceleratorFacade;
     @Resource(name = "commerceCommonI18NService")
     private CommerceCommonI18NService commerceCommonI18NService;
     @Resource(name = "opfAddressValidator")
@@ -76,8 +71,7 @@ public class OPFPaymentCheckoutStepController extends AbstractCheckoutStepContro
     private CheckoutPaymentFacade checkoutPaymentFacade;
     @Resource(name = "opfCheckoutPaymentFacade")
     private OPFCheckoutPaymentFacade opfCheckoutPaymentFacade;
-    @Resource(name = "opfAddressFacade")
-    private OPFAddressFacade opfAddressFacade;
+
 
     @GetMapping(value = "/choose")
     @RequireHardLogIn
@@ -88,12 +82,12 @@ public class OPFPaymentCheckoutStepController extends AbstractCheckoutStepContro
         final CartData cartData = getCheckoutFacade().getCheckoutCart();
         populateBillingAddress(model, cartData);
         model.addAttribute("cartData", cartData);
-        model.addAttribute("opfPaymentMethods", opfAcceleratorPaymentFacade.getActiveConfigurations());
+        model.addAttribute("opfPaymentMethods", opfAcceleratorFacade.getActiveConfigurations());
         this.prepareDataForPage(model);
         if (cartData.getSapBillingAddress() == null) {
             opfCheckoutPaymentFacade.setBillingAddressFromShipping(cartData.getDeliveryAddress());
         }
-        opfAcceleratorPaymentFacade.setPaymentInfoOnCart();
+        opfAcceleratorFacade.setPaymentInfoOnCart();
         getCheckoutFacade().prepareCartForCheckout();
         final ContentPageModel multiCheckoutSummaryPage = getContentPageForLabelOrId(MULTI_CHECKOUT_SUMMARY_CMS_PAGE_LABEL);
         storeCmsPageInModel(model, multiCheckoutSummaryPage);
@@ -137,21 +131,23 @@ public class OPFPaymentCheckoutStepController extends AbstractCheckoutStepContro
     @PostMapping(value = "/payment-initiate", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @RequireHardLogIn
-    public OPFInitiatePaymentData initiatePaymentSession(@RequestBody final OPFInitiatePaymentSessionRequest paymentRequest) {
+    public OPFInitiatePaymentData initiatePaymentSession(@RequestBody final OPFInitiatePaymentSessionRequest paymentRequest,
+            final HttpServletResponse response) {
         try {
             // Check if the necessary payment details are present
             boolean hasValidPaymentDetails = StringUtils.isNotEmpty(paymentRequest.getAccountId()) && StringUtils.isNotEmpty(
                     paymentRequest.getResultURL()) && StringUtils.isNotEmpty(paymentRequest.getCancelURL());
 
             if (hasValidPaymentDetails) {
-                return opfAcceleratorPaymentFacade.getInitiatePaymentResponse(paymentRequest);
+                OPFInitiatePaymentData opfInitiatePaymentData = opfAcceleratorFacade.getInitiatePaymentResponse(paymentRequest);
+                response.setStatus(HttpServletResponse.SC_CREATED);
+                return opfInitiatePaymentData;
             } else {
-                throw new OPFAcceleratorException("Missing required fields");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                throw new OPFRequestValidationException("Some required fields are missing or contain errors");
             }
-        } catch (CCAdapterClientException exec) {
-            throw new OPFAcceleratorException("Failed to initiate payment session due to a client exception", exec);
-        } catch (Exception exec) {
-            throw new OPFAcceleratorException("Failed to initiate payment session due to unexpected error", exec);
+        } catch (Exception ex) {
+            throw new OPFAcceleratorException("Failed to initiate payment session due to unexpected error", ex);
         }
     }
 
@@ -169,20 +165,20 @@ public class OPFPaymentCheckoutStepController extends AbstractCheckoutStepContro
     @PostMapping(value = "/{paymentSessionId}/payment-submit-complete", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @RequireHardLogIn
-    public OPFPaymentSubmitCompleteResponseData submit(final HttpServletRequest request, @PathVariable final String paymentSessionId,
+    public OPFPaymentSubmitCompleteResponseData submit(final HttpServletRequest request, final HttpServletResponse response,@PathVariable final String paymentSessionId,
             @RequestBody final OPFPaymentSubmitCompleteRequest paymentRequest) {
         try {
             if (StringUtils.isEmpty(paymentSessionId)) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 LOG.error("Invalid payment session ID or payment request data");
-                throw new OPFAcceleratorException("Invalid payment session ID or payment request data");
+                throw new OPFRequestValidationException("Some required fields are missing or contain errors");
             }
-            return opfAcceleratorPaymentFacade.getCompletedPaymentResponse(paymentRequest);
-        } catch (CCAdapterClientException exec) {
-            throw new OPFAcceleratorException("Client exception occurred during payment submit complete", exec);
-        } catch (HttpClientErrorException e) {
-            LOG.error(String.format("HTTP Error Response: %s", e.getResponseBodyAsString()));
-            return handleHttpClientError(e);
+            OPFPaymentSubmitCompleteResponseData opfPaymentSubmitCompleteResponseData = opfAcceleratorFacade.getCompletedPaymentResponse(
+                    paymentRequest);
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            return opfPaymentSubmitCompleteResponseData;
         } catch (Exception exec) {
+            LOG.error(String.format("HTTP Error Response: %s", exec));
             throw new OPFAcceleratorException("Exception occurred during payment submit complete", exec);
         }
     }
@@ -219,7 +215,7 @@ public class OPFPaymentCheckoutStepController extends AbstractCheckoutStepContro
     @PostMapping(value = {"/{paymentSessionId}/payment-submit", "/payment-submit"})
     @ResponseBody
     @RequireHardLogIn
-    public OPFPaymentSubmitResponseDTO submitPayment(final HttpServletRequest request,
+    public OPFPaymentSubmitResponseDTO submitPayment(final HttpServletRequest request,final HttpServletResponse response,
             @PathVariable(value = "paymentSessionId", required = false) final String paymentSessionId,
             @RequestBody final OPFPaymentSubmitRequestDTO opfPaymentSubmitRequestDTO) {
 
@@ -227,58 +223,16 @@ public class OPFPaymentCheckoutStepController extends AbstractCheckoutStepContro
               (!OPFAcceleratorCoreUtil.isQuickBuy(opfPaymentSubmitRequestDTO.getPaymentMethod())
                     && StringUtils.isEmpty(paymentSessionId))) {
             LOG.error("Invalid payment session ID or payment request data");
-            throw new IllegalArgumentException("Invalid payment session ID or payment request data");
+            throw new OPFRequestValidationException("Some required fields are missing or contain errors");
         }
         try {
             String ipAddress = request.getRemoteAddr();
-            return opfAcceleratorPaymentFacade.submitPayment(opfPaymentSubmitRequestDTO, paymentSessionId, ipAddress);
-        } catch (CCAdapterClientException exec) {
-            throw new OPFAcceleratorException("Client error during payment submit", exec);
+            OPFPaymentSubmitResponseDTO  opfPaymentSubmitResponseDTO = opfAcceleratorFacade.submitPayment(opfPaymentSubmitRequestDTO, paymentSessionId, ipAddress);
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            return opfPaymentSubmitResponseDTO;
         } catch (Exception exec) {
             throw new OPFAcceleratorException("Error during payment submit", exec);
         }
-    }
-
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
-    @ExceptionHandler({ OPFAcceleratorException.class })
-    public ErrorListWsDTO handleOpfCheckoutException(final Throwable ex) {
-        LOG.error(sanitize(ex.getMessage()), ex);
-        return OPFAcceleratorUtil.handleErrorInternal(ex);
-    }
-
-    /**
-     * Handles an {@link HttpClientErrorException} by logging the error response and attempting to parse specific fields from the response
-     * body JSON. It maps the JSON content into an instance of {@link OPFPaymentSubmitCompleteResponseData}.
-     *
-     * If parsing the JSON fails, a generic reason code will be set in the response data.
-     *
-     * @param e
-     *         the {@link HttpClientErrorException} thrown during an HTTP client request
-     * @return an instance of {@link OPFPaymentSubmitCompleteResponseData} containing parsed error details, or a default object with a
-     *         parsing error message if JSON parsing fails
-     */
-    private OPFPaymentSubmitCompleteResponseData handleHttpClientError(HttpClientErrorException e) {
-        LOG.error(String.format("HTTP Error Response: %s", e.getResponseBodyAsString()));
-        OPFPaymentSubmitCompleteResponseData responseData = new OPFPaymentSubmitCompleteResponseData();
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode json = mapper.readTree(e.getResponseBodyAsString());
-
-            if (json.has("status")) {
-                responseData.setStatus(json.get("status").asText());
-            }
-            if (json.has("reasonCode")) {
-                responseData.setReasonCode(json.get("reasonCode").asText());
-            }
-            if (json.has("paymentSessionId")) {
-                responseData.setPaymentSessionId(json.get("paymentSessionId").asText());
-            }
-        } catch (Exception parseEx) {
-            LOG.error("Failed to parse error response JSON", parseEx);
-            responseData.setReasonCode("Unable to parse error message.");
-        }
-        return responseData;
     }
 
     /**
@@ -322,12 +276,12 @@ public class OPFPaymentCheckoutStepController extends AbstractCheckoutStepContro
     @RequireHardLogIn
     public ResponseEntity<Map<String, Object>> updateBillingAddress(
             @Parameter(description = "Address object.", required = true) @RequestBody final AddressWsDTO addressWsDTO) {
-        AddressData addressData = opfAddressFacade.mapAddressWsDTOToAddressData(addressWsDTO);
+        AddressData addressData = opfAcceleratorFacade.mapAddressWsDTOToAddressData(addressWsDTO);
         final Errors errors = new BeanPropertyBindingResult(addressData, "addressData");
         opfAddressValidator.validate(addressData, errors);
-        Map<String, Object> errorList = OPFAcceleratorUtil.handleErrors(errors);
-        if (!errorList.isEmpty()) {
-            return ResponseEntity.badRequest().body(errorList);
+        if (errors.hasErrors())
+        {
+            throw new OPFRequestValidationException("Some required fields are missing or contain errors",errors);
         }
         opfCheckoutPaymentFacade.removeShippingFromPaymentAddress(addressData);
         checkoutPaymentFacade.setPaymentAddress(addressData);

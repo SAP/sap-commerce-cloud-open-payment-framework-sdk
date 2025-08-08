@@ -23,6 +23,10 @@ import java.util.List;
 
 import static de.hybris.platform.constants.OpfacceleratorcoreConstants.OPF_ACTIVE_CONFIG_DIVISION_ID;
 
+/**
+ * Populator implementation for converting an AbstractOrderData object to an OPFOrderData object.
+ * This class handles the mapping of data between the source and target objects.
+ */
 public class OPFPaymentOrderPopulator implements Populator<AbstractOrderData, OPFOrderData> {
 
     private ConfigurationService configurationService;
@@ -46,6 +50,12 @@ public class OPFPaymentOrderPopulator implements Populator<AbstractOrderData, OP
         populateOrderLines(cart, order);
     }
 
+    /**
+     * Populates the order details from the given cart data into the target order object.
+     *
+     * @param cart  the source {@link AbstractOrderData} containing the cart details
+     * @param order the target {@link OPFOrderData} to be populated with order details
+     */
     private void populateOrderDetails(AbstractOrderData cart, OPFOrderData order) {
         order.setCode(cart.getCode());
         if (cart.getTotalPrice() != null && cart.getTotalPrice().getValue() != null) {
@@ -78,6 +88,14 @@ public class OPFPaymentOrderPopulator implements Populator<AbstractOrderData, OP
         order.setShFeeTax(0.0);
     }
 
+    /**
+     * Populates the address details from the given cart data into the target order object.
+     * If a delivery address is present in the cart, it maps it to the shipping address
+     * and sets the billing address to the same value. Additionally, it populates the shipping method.
+     *
+     * @param cart  the source {@link AbstractOrderData} containing the cart details
+     * @param order the target {@link OPFOrderData} to be populated with address details
+     */
     private void populateAddresses(AbstractOrderData cart, OPFOrderData order) {
      if (cart.getDeliveryAddress() != null) {
             order.setShippingAddress(mapToOpfAddress(cart.getDeliveryAddress()));
@@ -87,7 +105,15 @@ public class OPFPaymentOrderPopulator implements Populator<AbstractOrderData, OP
 
     }
 
-
+    /**
+     * Populates the order lines from the given cart data into the target order object.
+     * Iterates through the entries in the cart, mapping each entry to an order line
+     * and setting various details such as quantity, delivery method, pricing, and product information.
+     * Default values are assigned for discounts, shipping fees, and taxes.
+     *
+     * @param cart  the source {@link AbstractOrderData} containing the cart details
+     * @param order the target {@link OPFOrderData} to be populated with order line details
+     */
     private void populateOrderLines(AbstractOrderData cart, OPFOrderData order) {
         if (CollectionUtils.isEmpty(cart.getEntries())) {
             return;

@@ -10,11 +10,15 @@ import com.opf.dto.request.OPFApplePayRequestDTO;
 import com.opf.dto.submit.OPFPaymentSubmitRequestDTO;
 import com.opf.dto.submit.OPFPaymentSubmitResponseDTO;
 import com.opf.dto.verify.OPFPaymentVerifyRequestDTO;
-import de.hybris.platform.constants.OpfacceleratorcoreConstants;
+import de.hybris.platform.commercefacades.user.data.AddressData;
+import de.hybris.platform.commercefacades.user.data.CountryData;
+import de.hybris.platform.commercefacades.user.data.RegionData;
+
 import de.hybris.platform.cta.request.OPFPaymentCTARequest;
 import de.hybris.platform.cta.response.OPFPaymentCTAResponse;
 import de.hybris.platform.data.response.OPFActiveConfigResponse;
-import de.hybris.platform.facade.OPFAcceleratorPaymentFacade;
+import de.hybris.platform.facade.OPFAcceleratorFacade;
+
 import de.hybris.platform.opf.data.OPFInitiatePaymentData;
 import de.hybris.platform.opf.data.OPFInitiatePaymentSessionRequestData;
 
@@ -31,19 +35,25 @@ import de.hybris.platform.opf.dto.OPFPaymentVerifyRequest;
 import de.hybris.platform.opf.dto.OPFPaymentVerifyResponse;
 import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteRequest;
 import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteResponse;
-import de.hybris.platform.service.OPFAcceleratorPaymentService;
+
+import de.hybris.platform.opf.dto.user.AddressWsDTO;
+import de.hybris.platform.opf.dto.user.CountryWsDTO;
+import de.hybris.platform.service.OPFAcceleratorService;
 import de.hybris.platform.servicelayer.dto.converter.Converter;
 import de.hybris.platform.util.OPFAcceleratorCoreUtil;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+
+import java.util.Optional;
 
 /**
  * Open Payment Framework Accelerator SDK Facade Impl
  */
-public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPaymentFacade {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultOPFAcceleratorPaymentFacade.class);
-    private OPFAcceleratorPaymentService opfAcceleratorPaymentService;
+public class DefaultOPFAcceleratorFacade implements OPFAcceleratorFacade {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultOPFAcceleratorFacade.class);
+    private OPFAcceleratorService opfAcceleratorService;
     private Converter<CTARequestDTO, OPFPaymentCTARequest> opfAcceleratorCTARequestConverter;
     private Converter<OPFPaymentCTAResponse, CTAResponseDTO> opfAcceleratorCTAResponseConverter;
     private Converter<OPFActiveConfigResponse, OPFActiveConfigDTO> opfAcceleratorActiveConfigResponseConverter;
@@ -58,9 +68,9 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
     private Converter<OPFApplePayRequestDTO, OPFApplePayRequest> opfApplePayRequestConverter;
 
     /**
-     * Constructor for DefaultOPFAcceleratorPaymentFacade
+     * Constructor for DefaultOPFAcceleratorFacade
      *
-     * @param opfAcceleratorPaymentService
+     * @param opfAcceleratorService
      *         payment service
      * @param opfAcceleratorCTARequestConverter
      *         cta request converter
@@ -82,8 +92,10 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
      *       submit complete request converter
      * @param opfPaymentSubmitCompleteResponseConverter
      *       submit complete response converter
+     * @param opfApplePayRequestConverter
+     *       apple pay request converter
      */
-    public DefaultOPFAcceleratorPaymentFacade(OPFAcceleratorPaymentService opfAcceleratorPaymentService,
+    public DefaultOPFAcceleratorFacade(OPFAcceleratorService opfAcceleratorService,
             Converter<CTARequestDTO, OPFPaymentCTARequest> opfAcceleratorCTARequestConverter,
             Converter<OPFPaymentCTAResponse, CTAResponseDTO> opfAcceleratorCTAResponseConverter,
             Converter<OPFActiveConfigResponse, OPFActiveConfigDTO> opfAcceleratorActiveConfigResponseConverter,
@@ -95,7 +107,7 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
             Converter<OPFPaymentSubmitCompleteRequest, OPFPaymentSubmitCompleteRequestData> opfPaymentSubmitCompleteRequestConverter,
             Converter<OPFPaymentSubmitCompleteResponse, OPFPaymentSubmitCompleteResponseData> opfPaymentSubmitCompleteResponseConverter,
             Converter<OPFApplePayRequestDTO, OPFApplePayRequest> opfApplePayRequestConverter) {
-        this.opfAcceleratorPaymentService = opfAcceleratorPaymentService;
+        this.opfAcceleratorService = opfAcceleratorService;
         this.opfAcceleratorCTARequestConverter = opfAcceleratorCTARequestConverter;
         this.opfAcceleratorCTAResponseConverter = opfAcceleratorCTAResponseConverter;
         this.opfAcceleratorActiveConfigResponseConverter = opfAcceleratorActiveConfigResponseConverter;
@@ -121,7 +133,7 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
         if (ctaRequestWsDTO != null) {
             OPFPaymentCTARequest request = new OPFPaymentCTARequest();
             opfAcceleratorCTARequestConverter.convert(ctaRequestWsDTO, request);
-            OPFPaymentCTAResponse ctaResponse = opfAcceleratorPaymentService.getCTAResponse(request);
+            OPFPaymentCTAResponse ctaResponse = opfAcceleratorService.getCTAResponse(request);
             if (ctaResponse != null) {
                 opfAcceleratorCTAResponseConverter.convert(ctaResponse, ctaResponseWsDTO);
             }
@@ -135,7 +147,7 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
     @Override
     public OPFActiveConfigDTO getActiveConfigurations() {
         OPFActiveConfigDTO activeConfigWsDTO = new OPFActiveConfigDTO();
-        OPFActiveConfigResponse activeConfigResponse = opfAcceleratorPaymentService.getActiveConfigurations();
+        OPFActiveConfigResponse activeConfigResponse = opfAcceleratorService.getActiveConfigurations();
         opfAcceleratorActiveConfigResponseConverter.convert(activeConfigResponse, activeConfigWsDTO);
         return activeConfigWsDTO;
     }
@@ -155,7 +167,7 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
         }
         OPFInitiatePaymentSessionRequestData requestData = new OPFInitiatePaymentSessionRequestData();
         opfPaymentSessionRequestConverter.convert(paymentRequest, requestData);
-        OPFInitiatePaymentSessionResponse response = opfAcceleratorPaymentService.getInitiatePaymentResponse(requestData);
+        OPFInitiatePaymentSessionResponse response = opfAcceleratorService.getInitiatePaymentResponse(requestData);
         OPFInitiatePaymentData paymentResponse = new OPFInitiatePaymentData();
         if (response != null) {
             opfPaymentSessionResponseConverter.convert(response, paymentResponse);
@@ -192,7 +204,7 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
             OPFPaymentBrowserInfoData browserInfoData = opfPaymentSubmitRequest.getBrowserInfo();
             browserInfoData.setIpAddress(ipAddress);
             opfPaymentSubmitRequest.setBrowserInfo(browserInfoData);
-            OPFPaymentSubmitResponse opfPaymentSubmitResponse = opfAcceleratorPaymentService.submitPayment(opfPaymentSubmitRequest, isQuickBuy);
+            OPFPaymentSubmitResponse opfPaymentSubmitResponse = opfAcceleratorService.submitPayment(opfPaymentSubmitRequest, isQuickBuy);
             if (opfPaymentSubmitResponse != null) {
                 opfAcceleratorSubmitResponseConverter.convert(opfPaymentSubmitResponse, opfPaymentSubmitResponseDTO);
             }
@@ -200,7 +212,7 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
         return opfPaymentSubmitResponseDTO;
     }
 
-    /* OPF Submit Complete payment
+    /** OPF Submit Complete payment
      *
      * @param paymentRequest
      *         Payment request data
@@ -209,31 +221,49 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
     @Override
     public OPFPaymentSubmitCompleteResponseData getCompletedPaymentResponse(OPFPaymentSubmitCompleteRequest paymentRequest) {
         OPFPaymentSubmitCompleteRequestData requestData = convertToRequestData(paymentRequest);
-        OPFPaymentSubmitCompleteResponse response = opfAcceleratorPaymentService.getCompletedPaymentResponse(requestData);
+        OPFPaymentSubmitCompleteResponse response = opfAcceleratorService.getCompletedPaymentResponse(requestData);
         return validateAndConvertResponse(response);
     }
 
+    /**
+     * set payment info on cart
+     *
+     */
     @Override
     public void setPaymentInfoOnCart() {
-        opfAcceleratorPaymentService.setPaymentInfo();
+        opfAcceleratorService.setPaymentInfo();
     }
 
+    /**
+     * get apple pay web session
+     *
+     * @param opfApplePayRequestDTO opfApplePayRequestDTO
+     * @return {@link OPFApplePayResponse}
+     * @see OPFApplePayResponse
+     */
     @Override
     public OPFApplePayResponse getApplePayWebSession(OPFApplePayRequestDTO opfApplePayRequestDTO) {
       OPFApplePayResponse opfApplePayResponse = new OPFApplePayResponse();
         if (opfApplePayRequestDTO != null) {
             OPFApplePayRequest opfApplePayRequest = new OPFApplePayRequest();
             opfApplePayRequestConverter.convert(opfApplePayRequestDTO, opfApplePayRequest);
-            opfApplePayResponse = opfAcceleratorPaymentService.getApplePayWebSession(opfApplePayRequest);
+            opfApplePayResponse = opfAcceleratorService.getApplePayWebSession(opfApplePayRequest);
         }
         return opfApplePayResponse;
     }
 
+    /**
+     * verify payment
+     *
+     * @param opfPaymentVerifyRequestDTO opfPaymentVerifyRequestDTO
+     * @return {@link OPFPaymentVerifyResponse}
+     * @see OPFPaymentVerifyResponse
+     */
     @Override
     public OPFPaymentVerifyResponse verifyPayment(OPFPaymentVerifyRequestDTO opfPaymentVerifyRequestDTO) {
         OPFPaymentVerifyRequest opfPaymentVerifyRequest = new OPFPaymentVerifyRequest();
         opfAcceleratorVerifyRequestConverter.convert(opfPaymentVerifyRequestDTO, opfPaymentVerifyRequest);
-        return opfAcceleratorPaymentService.verifyPayment(opfPaymentVerifyRequest);
+        return opfAcceleratorService.verifyPayment(opfPaymentVerifyRequest);
     }
 
     /**
@@ -262,6 +292,41 @@ public class DefaultOPFAcceleratorPaymentFacade implements OPFAcceleratorPayment
             opfPaymentSubmitCompleteResponseConverter.convert(response, paymentResponse);
         }
         return paymentResponse;
+    }
+
+    /**
+     * Maps an {@link AddressWsDTO} object to an {@link AddressData} object. This method performs a shallow copy of simple properties using
+     * {@link org.springframework.beans.BeanUtils} and explicitly maps nested objects such as {@code CountryWsDTO} to {@code CountryData}.
+     * It is useful in controller or facade layers where incoming web service DTOs need to be transformed into internal data objects used in
+     * the service layer.
+     *
+     * @param source
+     *         the {@link AddressWsDTO} object containing data from the web service request. Must not be {@code null}.
+     * @return an {@link AddressData} object populated with values from the given {@code AddressWsDTO}.
+     */
+    @Override
+    public AddressData mapAddressWsDTOToAddressData(AddressWsDTO source) {
+        AddressData target = new AddressData();
+        BeanUtils.copyProperties(source, target);
+
+        Optional.ofNullable(source.getCountry()).ifPresent(country -> {
+            CountryData countryData = new CountryData();
+            BeanUtils.copyProperties(country, countryData);
+            target.setCountry(countryData);
+        });
+
+        Optional.ofNullable(source.getRegion()).ifPresent(region -> {
+            RegionData regionData = new RegionData();
+            String regionIso = region.getIsocode();
+            String countryIso = Optional.ofNullable(source.getCountry()).map(CountryWsDTO::getIsocode).orElse(null);
+            if (regionIso != null && countryIso != null) {
+                regionData.setIsocodeShort(regionIso);
+                regionData.setCountryIso(countryIso);
+                regionData.setIsocode(regionIso.contains("-") ? regionIso : (countryIso + "-" + regionIso));
+                target.setRegion(regionData);
+            }
+        });
+        return target;
     }
 
 }

@@ -16,6 +16,10 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
+/**
+ * Populator implementation for converting an OPFPaymentSubmitResponse to an OPFPaymentSubmitResponseDTO.
+ * This class handles the mapping of data between the source and target objects.
+ */
 public class OPFAcceleratorPaymentSubmitResponsePopulator implements Populator<OPFPaymentSubmitResponse, OPFPaymentSubmitResponseDTO> {
 
     @Override

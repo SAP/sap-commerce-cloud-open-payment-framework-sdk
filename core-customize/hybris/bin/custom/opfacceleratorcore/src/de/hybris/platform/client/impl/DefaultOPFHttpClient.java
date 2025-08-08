@@ -1,12 +1,5 @@
 /*
- * [y] hybris Platform
- *
- * Copyright (c) 2018 SAP SE or an SAP affiliate company. All rights reserved.
- *
- * This software is the confidential and proprietary information of SAP
- * ("Confidential Information"). You shall not disclose such Confidential
- * Information and shall use it only in accordance with the terms of the
- * license agreement you entered into with SAP.
+ * Copyright (c) 2025 SAP SE or an SAP affiliate company. All rights reserved.
  */
 package de.hybris.platform.client.impl;
 
@@ -29,6 +22,14 @@ import static de.hybris.platform.constants.OpfacceleratorcoreConstants.OPF_PUBLI
 
 public class DefaultOPFHttpClient extends DefaultCCAdapterHttpClient implements OPFHttpClient {
 
+    /**
+     * Constructs a new DefaultOPFHttpClient with the specified parameters.
+     *
+     * @param tokenUrlKey The key used to retrieve the token URL from the configuration.
+     * @param securityFileKey The key used to retrieve the security file name from the configuration.
+     * @param securityFileLocationKey The key used to retrieve the security file location from the configuration.
+     * @param retryTemplate The template used to handle retry logic for HTTP requests.
+     */
     public DefaultOPFHttpClient(String tokenUrlKey, String securityFileKey, String securityFileLocationKey, RetryTemplate retryTemplate,
             ConfigurationService configurationService) {
         super(tokenUrlKey, securityFileKey, securityFileLocationKey, retryTemplate, configurationService);

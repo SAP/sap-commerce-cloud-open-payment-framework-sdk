@@ -15,6 +15,11 @@ import de.hybris.platform.servicelayer.dto.converter.Converter;
 
 import java.util.stream.Collectors;
 
+/**
+ * Populator implementation for converting an OPFPaymentSubmitCompleteRequest object
+ * to an OPFPaymentSubmitCompleteRequestData object.
+ * This class handles the mapping of data between the source and target objects.
+ */
 public class OPFPaymentSubmitCompleteRequestPopulator
         implements Populator<OPFPaymentSubmitCompleteRequest, OPFPaymentSubmitCompleteRequestData> {
     private Converter<AbstractOrderData, OPFOrderData> opfPaymentOrderConverter;

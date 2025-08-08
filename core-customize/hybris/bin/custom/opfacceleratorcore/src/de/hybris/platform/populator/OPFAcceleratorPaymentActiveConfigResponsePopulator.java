@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Populator implementation for converting OPFActiveConfigResponse to OPFActiveConfigDTO.
+ * This class handles the mapping of data between the source and target objects.
+ */
 public class OPFAcceleratorPaymentActiveConfigResponsePopulator implements Populator<OPFActiveConfigResponse, OPFActiveConfigDTO> {
     private static final String OPF_ACTIVE_CONFIG_PAYMENT_TYPE = "opf.active.config.payment.type";
     private static final String CARD_PAYMENT_TYPE = "CARD";
@@ -49,6 +53,14 @@ public class OPFAcceleratorPaymentActiveConfigResponsePopulator implements Popul
         }
     }
 
+    /**
+     * populate digital wallet d t o
+     *
+     * @param activeConfigDigitalWalletList activeConfigDigitalWalletList
+     * @return {@link List}
+     * @see List
+     * @see OPFActiveConfigDigitalWalletDTO
+     */
     private List<OPFActiveConfigDigitalWalletDTO> populateDigitalWalletDTO(
             List<OPFActiveConfigDigitalWallet> activeConfigDigitalWalletList) {
         List<OPFActiveConfigDigitalWalletDTO> activeConfigDigitalWalletWsDTOList = new ArrayList<>();
@@ -68,6 +80,13 @@ public class OPFAcceleratorPaymentActiveConfigResponsePopulator implements Popul
         return activeConfigDigitalWalletWsDTOList;
     }
 
+    /**
+     * populate pageable data
+     *
+     * @param opfPageableData opfPageableData
+     * @return {@link OPFPageableDTO}
+     * @see OPFPageableDTO
+     */
     private OPFPageableDTO populatePageableData(OPFPageableData opfPageableData) {
         OPFPageableDTO opfPageableWsDTO = new OPFPageableDTO();
         if (opfPageableData != null) {

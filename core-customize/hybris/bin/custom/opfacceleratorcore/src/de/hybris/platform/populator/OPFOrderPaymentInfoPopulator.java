@@ -21,12 +21,16 @@ import static de.hybris.platform.servicelayer.util.ServicesUtil.validateParamete
 public class OPFOrderPaymentInfoPopulator implements Populator<AbstractOrderModel, AbstractOrderData> {
 
     /**
-     * Populates the target order data with payment information for guest users login.
-     * If a billing address is available, it sets the guest user's email (if present) on the billing address
-     * and assigns it to a new CCPaymentInfoData object, which is then set as the payment info on the target
-     * @param source the source order model containing the user and other order-related data
-     * @param target the target order data object to be populated
-     * @throws ConversionException if any issue occurs during the population process
+     * Populates the target order data with payment information for guest users login. If a billing address is available, it sets the guest
+     * user's email (if present) on the billing address and assigns it to a new CCPaymentInfoData object, which is then set as the payment
+     * info on the target
+     *
+     * @param source
+     *         the source order model containing the user and other order-related data
+     * @param target
+     *         the target order data object to be populated
+     * @throws ConversionException
+     *         if any issue occurs during the population process
      */
     public void populate(AbstractOrderModel source, AbstractOrderData target) throws ConversionException {
         validateParameterNotNullStandardMessage("source", source);
@@ -38,15 +42,13 @@ public class OPFOrderPaymentInfoPopulator implements Populator<AbstractOrderMode
             // It does not support generic SAP payment types like Google Pay or Apple Pay.
             CCPaymentInfoData ccPaymentInfoData = new CCPaymentInfoData();
             AddressData address = target.getSapBillingAddress();
-            if (address != null && CustomerType.GUEST.equals(customer.getType())) {
-
+            if (address != null && CustomerType.GUEST.equals(customer.getType()) && StringUtils.isNotEmpty(
+                    customer.getSapGuestUserEmail())) {
                 //quick buy
-                if (StringUtils.isNotEmpty(customer.getSapGuestUserEmail())) {
-                    address.setEmail(customer.getSapGuestUserEmail());
-                }
+                address.setEmail(customer.getSapGuestUserEmail());
             }
-                ccPaymentInfoData.setBillingAddress(address);
-                target.setPaymentInfo(ccPaymentInfoData);
+            ccPaymentInfoData.setBillingAddress(address);
+            target.setPaymentInfo(ccPaymentInfoData);
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 SAP SE or an SAP affiliate company. All rights reserved.
+ * Copyright (c) 2025 SAP SE or an SAP affiliate company. All rights reserved.
  */
 package de.hybris.platform.populator;
 
@@ -54,6 +54,14 @@ public class OPFAcceleratorPaymentSessionResponsePopulator implements Populator<
         }
     }
 
+    /**
+     * convert urls
+     *
+     * @param urlDTOs urlDTOs
+     * @return {@link List}
+     * @see List
+     * @see OPFPaymentUrlsData
+     */
     private List<OPFPaymentUrlsData> convertUrls(List<OPFPaymentUrls> urlDTOs) {
         List<OPFPaymentUrlsData> urlDataList = new ArrayList<>();
 
@@ -71,6 +79,14 @@ public class OPFAcceleratorPaymentSessionResponsePopulator implements Populator<
         return urlDataList;
     }
 
+    /**
+     * convert attributes
+     *
+     * @param attributeDTOs attributeDTOs
+     * @return {@link List}
+     * @see List
+     * @see OPFPaymentAttributeData
+     */
     private List<OPFPaymentAttributeData> convertAttributes(List<OPFPaymentAttribute> attributeDTOs) {
         List<OPFPaymentAttributeData> attributeDataList = new ArrayList<>();
 

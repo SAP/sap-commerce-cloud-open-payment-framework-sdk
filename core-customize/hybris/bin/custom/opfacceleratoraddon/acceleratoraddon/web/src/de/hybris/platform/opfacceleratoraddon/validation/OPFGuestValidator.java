@@ -15,6 +15,9 @@ import org.springframework.validation.Validator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Validator implementation for validating guest user data.
+ */
 public class OPFGuestValidator implements Validator {
     private final I18NService i18NService;
     private final MessageSource messageSource;
@@ -25,6 +28,13 @@ public class OPFGuestValidator implements Validator {
         return CustomerData.class.equals(aClass);
     }
 
+    /**
+     * Constructs a new OPFGuestValidator with the specified services.
+     *
+     * @param i18NService The service used for internationalization and locale-specific operations.
+     * @param messageSource The source for resolving messages, supporting internationalization.
+     * @param configurationService The service used to access configuration properties.
+     */
     public OPFGuestValidator(final I18NService i18NService, final MessageSource messageSource,
             final ConfigurationService configurationService) {
         this.i18NService = i18NService;
@@ -32,6 +42,12 @@ public class OPFGuestValidator implements Validator {
         this.configurationService = configurationService;
     }
 
+    /**
+     * validate
+     *
+     * @param object object
+     * @param errors errors
+     */
     @Override
     public void validate(final Object object, final Errors errors) {
         final CustomerData customerData = (CustomerData) object;
@@ -41,6 +57,12 @@ public class OPFGuestValidator implements Validator {
         }
     }
 
+    /**
+     * validate email address
+     *
+     * @param email email
+     * @return {@link boolean}
+     */
     protected boolean validateEmailAddress(final String email) {
         try {
             final Matcher matcher = Pattern.compile(configurationService.getConfiguration().getString(WebConstants.EMAIL_REGEX)).matcher(email);

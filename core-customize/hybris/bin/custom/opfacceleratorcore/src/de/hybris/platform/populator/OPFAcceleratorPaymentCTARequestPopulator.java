@@ -13,6 +13,10 @@ import de.hybris.platform.servicelayer.dto.converter.ConversionException;
 
 import java.util.stream.Collectors;
 
+/**
+ * Populator implementation for converting a CTARequestDTO to an OPFPaymentCTARequest.
+ * This class handles the mapping of data between the source and target objects.
+ */
 public class OPFAcceleratorPaymentCTARequestPopulator implements Populator<CTARequestDTO, OPFPaymentCTARequest> {
     @Override
     public void populate(CTARequestDTO source, OPFPaymentCTARequest target) throws ConversionException {

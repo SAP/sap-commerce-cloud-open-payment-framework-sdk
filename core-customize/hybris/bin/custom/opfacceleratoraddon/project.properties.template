@@ -12,9 +12,5 @@ opfacceleratoraddon.application-context=opfacceleratoraddon-spring.xml
 yacceleratorstorefront.additionalWebSpringConfigs.opfacceleratoraddon=classpath:/opfacceleratoraddon/web/spring/opfacceleratoraddon-web-spring.xml,classpath:/opfacceleratoraddon/web/spring/multi-step-checkout-config.xml
 
 
-
-# opfacceleratoraddon.javascript.paths.responsive=
-# opfacceleratoraddon.css.paths.responsive=
-
 opfacceleratoraddon.javascript.paths.responsive=/responsive/common/js/opfacceleratoraddon.js;/responsive/common/js/constants.js;/responsive/common/js/defaults.js;/responsive/common/js/opfapi.js;/responsive/common/js/opfutils.js;/responsive/common/js/opfquickbuy.js;/responsive/common/js/opfapplepay.js;/responsive/common/js/opfgooglepay.js;
 opfacceleratoraddon.css.paths.responsive=/responsive/common/css/opfacceleratoraddon.css

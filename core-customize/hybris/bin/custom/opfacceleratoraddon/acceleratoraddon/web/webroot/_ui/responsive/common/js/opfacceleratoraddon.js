@@ -45,72 +45,79 @@ $(document).ready(function () {
  * Sends a POST request to the OPF CTA script rendering API and injects the returned dynamic script and HTML into the page.
  */
 function loadOpfCtaScript(selectedLanguage, ctaScriptContext, paymentAccountIds) {
-    const url = `${ACC.config.encodedContextPath}/opf-payment/cta-scripts-rendering`;
-    const ctaProductItemsArr = [];
+  const url = `${ACC.config.encodedContextPath}/opf-payment/cta-scripts-rendering`;
+  const ctaProductItemsArr = [];
 
-    if(ctaScriptContext.indexOf('PDP') > -1) {
-        const productCode = $('.code').html() || '';
-        const quantity = $('#pdpAddtoCartInput').val() || 0;
-        ctaProductItemsArr.push({
-                productId: productCode,
-                quantity: parseInt(quantity)
-        });
-    }
-    else if(ctaScriptContext.indexOf('CART') > -1) {
-        document.querySelectorAll('form[id^="updateCartForm"]').forEach(form => {
-            const productCodeSelected = form.querySelector('input[name="productCode"]');
-            const quantitySelected = form.querySelector('input[name="quantity"]');
-            ctaProductItemsArr.push({
-                    productId: productCodeSelected.value.trim(),
-                    quantity: parseInt(quantitySelected.value.trim())
-            });
-        });
-    }
-    const scriptIdentifier= getNewScriptIdentifier();
-    const payload = {
-        additionalData: [
-                { key: "locale", value: selectedLanguage },
-                { key: "currency", value: ACC.common.currentCurrency },
-                { key: "scriptIdentifier", value: scriptIdentifier }
-        ],
-        paymentAccountIds,
-        ctaProductItems: ctaProductItemsArr,
-        scriptLocations: [ctaScriptContext]
-    };
+  // Handle PDP context
+  if (ctaScriptContext.indexOf('PDP') > -1) {
+    const productCode = $('.code').html() || '';
+    const quantity = $('#pdpAddtoCartInput').val() || 0;
 
-    $.ajax({
-        url: url,
-        data: JSON.stringify(payload),
-        method: "POST",
-        contentType: 'application/json',
-        success: function(response) {
-              if (response?.value?.length > 0) {
-                const jsItem = response.value[0].dynamicScript.jsUrls[0];
-                const klarnaScript = document.createElement("script");
-                klarnaScript.src = jsItem.url;
-                klarnaScript.async = true;
-                klarnaScript.defer = true;
-                klarnaScript.type = "text/javascript";
-
-                jsItem.attributes.forEach(attr => {
-                  klarnaScript.setAttribute(attr.key, attr.value);
-                });
-
-                klarnaScript.setAttribute("data-opf-resource", "true");
-                document.head.appendChild(klarnaScript);
-
-                const container = document.getElementById("opf-cta-script");
-                if (container) {
-                  container.innerHTML = response.value[0].dynamicScript.html;
-                  executeScriptFromHtml(response.value[0].dynamicScript.html);
-                  scriptReady(ctaScriptContext,scriptIdentifier);
-                }
-              }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-              console.error(`Failed to close account. Error: [${errorThrown}]`);
-        }
+    ctaProductItemsArr.push({
+      productId: productCode,
+      quantity: parseInt(quantity)
     });
+  }
+
+  // Handle CART context
+  else if (ctaScriptContext.indexOf('CART') > -1) {
+    document.querySelectorAll('form[id^="updateCartForm"]').forEach(form => {
+      const productCodeSelected = form.querySelector('input[name="productCode"]');
+      const quantitySelected = form.querySelector('input[name="quantity"]');
+
+      ctaProductItemsArr.push({
+        productId: productCodeSelected.value.trim(),
+        quantity: parseInt(quantitySelected.value.trim())
+      });
+    });
+  }
+
+  const scriptIdentifier = getNewScriptIdentifier();
+
+  const payload = {
+    additionalData: [
+      { key: "locale", value: selectedLanguage },
+      { key: "currency", value: ACC.common.currentCurrency },
+      { key: "scriptIdentifier", value: scriptIdentifier }
+    ],
+    paymentAccountIds,
+    ctaProductItems: ctaProductItemsArr,
+    scriptLocations: [ctaScriptContext]
+  };
+
+  $.ajax({
+    url: url,
+    data: JSON.stringify(payload),
+    method: "POST",
+    contentType: 'application/json',
+    success: function (response) {
+      if (response?.value?.length > 0) {
+        const jsItem = response.value[0].dynamicScript.jsUrls[0];
+
+        createAndAppendResource({
+          type: 'script',
+          url: jsItem.url,
+          attributes: {
+            ...(jsItem.attributes || []).reduce((acc, attr) => {
+              acc[attr.key] = attr.value;
+              return acc;
+            }, {}),
+            'data-opf-resource': 'true'
+          }
+        });
+
+        const container = document.getElementById("opf-cta-script");
+        if (container) {
+          container.innerHTML = response.value[0].dynamicScript.html;
+          executeScriptFromHtml(response.value[0].dynamicScript.html);
+          scriptReady(ctaScriptContext, scriptIdentifier);
+        }
+      }
+    },
+    error: function (jqXHR, textStatus, errorThrown) {
+      console.error(`Failed to close account. Error: [${errorThrown}]`);
+    }
+  });
 }
 
 function scriptReady(ctaScriptContext, scriptIdentifier) {
@@ -420,26 +427,14 @@ function loadPaymentScript(resource, onLoad, onError) {
     return;
   }
 
-  const script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = resource.url;
-  script.defer = true;
-  script.async = true;
-
-  const attrs = createAttributesList(resource.attributes || []);
-  for (const key in attrs) {
-    script.setAttribute(key, attrs[key]);
-  }
-
-  if (resource.sri) {
-    script.setAttribute('integrity', resource.sri);
-    script.setAttribute('crossorigin', 'anonymous');
-  }
-
-  script.onload = onLoad;
-  script.onerror = onError;
-
-  document.head.appendChild(script);
+  createAndAppendResource({
+    type: 'script',
+    url: resource.url,
+    attributes: createAttributesList(resource.attributes || {}),
+    sri: resource.sri,
+    onLoad,
+    onError
+  });
 }
 
 /**
@@ -459,24 +454,14 @@ function loadPaymentStyles(resource, onLoad, onError) {
     return;
   }
 
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = resource.url;
-
-  const attrs = createAttributesList(resource.attributes || []);
-  for (const key in attrs) {
-    link.setAttribute(key, attrs[key]);
-  }
-
-  if (resource.sri) {
-    link.setAttribute('integrity', resource.sri);
-    link.setAttribute('crossorigin', 'anonymous');
-  }
-
-  link.onload = onLoad;
-  link.onerror = onError;
-
-  document.head.appendChild(link);
+  createAndAppendResource({
+    type: 'style',
+    url: resource.url,
+    attributes: createAttributesList(resource.attributes || {}),
+    sri: resource.sri,
+    onLoad,
+    onError
+  });
 }
 
 /**
@@ -510,6 +495,49 @@ function createAttributesList(keyValueList) {
   delete attributes[OPF_RESOURCE_LOAD_ONCE_ATTRIBUTE_KEY];
   return attributes;
 }
+
+/**
+ * Dynamically creates and appends a script or stylesheet resource to the document head.
+ */
+function createAndAppendResource({ type, url, attributes = {}, sri, onLoad, onError }) {
+  let element;
+
+  // Create the appropriate HTML element based on resource type
+  if (type === 'script') {
+    element = document.createElement('script');
+    element.src = url;
+    element.type = 'text/javascript';
+    element.async = true;
+    element.defer = true;
+  } else if (type === 'style') {
+    element = document.createElement('link');
+    element.href = url;
+    element.rel = 'stylesheet';
+  } else {
+    // Unsupported resource type
+    console.warn(`Unsupported resource type: ${type}`);
+    return;
+  }
+
+  // Apply any additional custom attributes
+  Object.entries(attributes).forEach(([key, value]) => {
+    element.setAttribute(key, value);
+  });
+
+  // If SRI is provided, set integrity and crossorigin for security
+  if (sri) {
+    element.setAttribute('integrity', sri);
+    element.setAttribute('crossorigin', 'anonymous');
+  }
+
+  // Register event callbacks for success and failure
+  if (onLoad) element.onload = onLoad;
+  if (onError) element.onerror = onError;
+
+  // Inject the element into the document head
+  document.head.appendChild(element);
+}
+
 
 /**
  * Returns browser-related info.
@@ -650,7 +678,6 @@ function attemptAjaxSubmit({ url, payload, maxRetries, onSuccess, onError }) {
       },
       error: function (xhr, status, errorThrown) {
         attempts++;
-        logError(errorThrown);
 
         if (attempts < maxRetries) {
           console.warn('Retrying AJAX request...');
@@ -664,7 +691,7 @@ function attemptAjaxSubmit({ url, payload, maxRetries, onSuccess, onError }) {
             type: 'AJAX_FAILURE',
           };
           onError(error);
-          logError(error);
+          showError(xhr);
         }
       },
     });
@@ -711,20 +738,11 @@ function handlePaymentResponse(response, { submitSuccess, submitPending, submitF
     error.type = 'PAYMENT_REJECTED';
     error.message = 'Payment was rejected';
     submitFailure(error);
-    logError(error);
   } else {
     error.type = 'STATUS_NOT_RECOGNIZED';
     error.message = 'Unknown payment status';
     submitFailure(error);
-    logError(error);
   }
-}
-
-/**
- * Generic error logger.
- */
-function logError(error) {
-  console.error('An error occurred:', error);
 }
 
 /**
