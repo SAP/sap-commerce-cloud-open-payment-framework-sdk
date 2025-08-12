@@ -10,7 +10,7 @@ Development of custom addon(s) on the SAP Commerce Accelerator storefront that c
 1. Install addon using below command
     ant addoninstall -Daddonnames="opfacceleratoraddon" -DaddonStorefront.yacceleratorstorefront="mystorestorefront"
 2. Enable OPF on the basestore by running the impex opfacceleratorcore/resources/opfacceleratorcore/impex/opf.impex
-3. Create the folder named as security in the config folder , add files named ccadapter-security.txt(contains client_id and secret for ccadapter ) and opf-acc-sdk-security.txt(contains client_id and secret for OPF payment    gateway) in the security folder created .
+3. Create the folder named as security in the config folder , create files named ccadapter-security.txt(contains client_id and secret for ccadapter ) and opf-acc-sdk-security.txt(contains client_id and secret for OPF payment gateway) in the security folder created .
 4. Add below tenant configs in the hcs_commons since urls are not part of the code
      ccAdapter.api.url=https://cmbye3-esamerica1-d34.opf.commerce.us.context.cloud.sap/commerce-cloud-adapter
      ccAdapter.oauth.client-secret.file=ccadapter-security.txt
@@ -20,7 +20,7 @@ Development of custom addon(s) on the SAP Commerce Accelerator storefront that c
      opf.oauth.client-secret.file.location=${HYBRIS_CONFIG_DIR}/security
      opf.oauth.token.url=https://akry66c54.accounts.ondemand.com/oauth2/token
 5. For CTA script rendering , add opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/cart/opfCartCTAScript.tag file in cartPage.jsp of the mystorefront extension and add    opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/product/opfProductCTAScript.tag in checkoutDisplay.jsp
-6. To integrate OPF order process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/f77e5d4c4a984d6c8e3cc7882bf79194.html?locale=en-US , depending upon the order       integrations used(SAP OMS or Asynchronous order management ), follow the steps provided in the link.
+6. To integrate OPF order process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/f77e5d4c4a984d6c8e3cc7882bf79194.html?locale=en-US,depending upon the order       integrations used(SAP OMS or Asynchronous order management ), follow the steps provided in the link.
 7. To integrate OPF return process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/cd2a9b34b8d54336be9737c220ca5095.html?locale=en-US , depending upon the order integration used(SAP   OMS or Asynchronous order management), follow the specific steps provide in the link.
 ## Support, Feedback, Contributing
 
