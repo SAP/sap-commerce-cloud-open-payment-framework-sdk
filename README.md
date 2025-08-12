@@ -7,9 +7,12 @@
 Development of custom addon(s) on the SAP Commerce Accelerator storefront that can be shipped/delivered to customers in a standalone mode so that implementation partners/customers can apply these addons to their existing storefront application with minimal customization/configurations to replace the legacy payment integration approach and use the OPF based payment providers. The addon shall be delivered with the integration capabilities to all OPF APIs that are necessary for the end-end payment flow. Customers need to perform an implementation of the addon on their storefronts which shall mostly be configuration and testing effort* to replace the existing payment flows via custom developments. A new checkout flow shall be introduced for the OPF integration such that A/B testing shall be possible to validate the new OPF integration in terms of payment authorization/capture and order placement.
 
 ## Requirements and Setup
-
-*Insert a short description what is required to get your project running...*
-
+1. Install addon using below command
+    ant addoninstall -Daddonnames="opfacceleratoraddon" -DaddonStorefront.yacceleratorstorefront="mystorestorefront"
+2. Enable OPF on the basestore by running the impex opfacceleratorcore/resources/opfacceleratorcore/impex/opf.impex
+3. For CTA script rendering , add opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/cart/opfCartCTAScript.tag file in cartPage.jsp of the mystorefront extension and add    opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/product/opfProductCTAScript.tag in checkoutDisplay.jsp
+4. To integrate OPF order process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/f77e5d4c4a984d6c8e3cc7882bf79194.html?locale=en-US , depending upon the order      integrations used(SAP OMS or Asynchronous order management ), follow the steps provided in the link.
+5. To integrate OPF return process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/cd2a9b34b8d54336be9737c220ca5095.html?locale=en-US , depending upon the order integration used(SAP   OMS or Asynchronous order management), follow the specific steps provide in the link.
 ## Support, Feedback, Contributing
 
 This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/SAP/sap-commerce-cloud-open-payment-framework-sdk/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
