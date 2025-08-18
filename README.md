@@ -8,20 +8,21 @@ Development of custom addon(s) on the SAP Commerce Accelerator storefront that c
 
 ## Requirements and Setup
 1. Install addon using below command
-    ant addoninstall -Daddonnames="opfacceleratoraddon" -DaddonStorefront.yacceleratorstorefront="mystorestorefront"
+    ant addoninstall -Daddonnames="opfacceleratoraddon" -DaddonStorefront.yacceleratorstorefront="mystorestorefront"(custom storefront name)
 2. Enable OPF on the basestore by running the impex opfacceleratorcore/resources/opfacceleratorcore/impex/opf.impex
-3. Create the folder named as security in the config folder , create files named ccadapter-security.txt(contains client_id and secret for ccadapter ) and opf-acc-sdk-security.txt(contains client_id and secret for OPF payment gateway) in the security folder created .
+3. Create the folder named as security in the config folder , create txt files containing client_id and secret for ccadapter and contains client_id and secret for      OPF payment gateway. (Note: the filenames created here should be defined in the ccAdapter.oauth.client-secret.file and opf.oauth.client-secret.file)
 4. Add below tenant configs in the hcs_commons since urls are not part of the code
      ccAdapter.api.url=
-     ccAdapter.oauth.client-secret.file=ccadapter-security.txt
+     ccAdapter.oauth.client-secret.file= (ccadapter txt file name from step 3)
      ccAdapter.oauth.token.url=
      opf.base.url=
-     opf.oauth.client-secret.file=opf-acc-sdk-security.txt
+     opf.oauth.client-secret.file=(OPF payment gateway txt filename from step3)
      opf.oauth.client-secret.file.location=${HYBRIS_CONFIG_DIR}/security
      opf.oauth.token.url=
-5. For CTA script rendering , add opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/cart/opfCartCTAScript.tag file in cartPage.jsp of the mystorefront extension and add    opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/product/opfProductCTAScript.tag in checkoutDisplay.jsp
-6. To integrate OPF order process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/f77e5d4c4a984d6c8e3cc7882bf79194.html?locale=en-US,depending upon the order       integrations used(SAP OMS or Asynchronous order management ), follow the steps provided in the link.
-7. To integrate OPF return process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/cd2a9b34b8d54336be9737c220ca5095.html?locale=en-US , depending upon the order integration used(SAP   OMS or Asynchronous order management), follow the specific steps provide in the link.
+5. For CTA script rendering(for example Karlna) which is optional to be shown on cartPage and PDP page ,add opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/cart/opfCartCTAScript.tag file in cartPage.jsp of the mystorefront extension and add opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/product/opfProductCTAScript.tag in productDetailsPanel.jsp
+6. GooglePay integration add opfGooglePay.tag in checkoutDisplay.jsp
+7. To integrate OPF order process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/f77e5d4c4a984d6c8e3cc7882bf79194.html?locale=en-US,depending upon the order       integrations used(SAP OMS or Asynchronous order management ), follow the steps provided in the link.
+8. To integrate OPF return process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/cd2a9b34b8d54336be9737c220ca5095.html?locale=en-US , depending upon the order integration used(SAP   OMS or Asynchronous order management), follow the specific steps provide in the link.
 ## Support, Feedback, Contributing
 
 This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/SAP/sap-commerce-cloud-open-payment-framework-sdk/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
