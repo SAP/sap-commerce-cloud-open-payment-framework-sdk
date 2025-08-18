@@ -202,6 +202,9 @@ public class DefaultOPFAcceleratorFacade implements OPFAcceleratorFacade {
                 opfPaymentSubmitRequest.setPaymentSessionId(paymentSessionId);
             }
             OPFPaymentBrowserInfoData browserInfoData = opfPaymentSubmitRequest.getBrowserInfo();
+            if(browserInfoData == null) {
+                browserInfoData = new OPFPaymentBrowserInfoData();
+            }
             browserInfoData.setIpAddress(ipAddress);
             opfPaymentSubmitRequest.setBrowserInfo(browserInfoData);
             OPFPaymentSubmitResponse opfPaymentSubmitResponse = opfAcceleratorService.submitPayment(opfPaymentSubmitRequest, isQuickBuy);
@@ -243,12 +246,16 @@ public class DefaultOPFAcceleratorFacade implements OPFAcceleratorFacade {
      */
     @Override
     public OPFApplePayResponse getApplePayWebSession(OPFApplePayRequestDTO opfApplePayRequestDTO) {
-      OPFApplePayResponse opfApplePayResponse = new OPFApplePayResponse();
+        OPFApplePayResponse opfApplePayResponse = new OPFApplePayResponse();
         if (opfApplePayRequestDTO != null) {
             OPFApplePayRequest opfApplePayRequest = new OPFApplePayRequest();
             opfApplePayRequestConverter.convert(opfApplePayRequestDTO, opfApplePayRequest);
             opfApplePayResponse = opfAcceleratorService.getApplePayWebSession(opfApplePayRequest);
+            if (opfApplePayResponse == null) {
+                opfApplePayResponse = new OPFApplePayResponse();
+            }
         }
+
         return opfApplePayResponse;
     }
 
@@ -328,5 +335,6 @@ public class DefaultOPFAcceleratorFacade implements OPFAcceleratorFacade {
         });
         return target;
     }
+
 
 }

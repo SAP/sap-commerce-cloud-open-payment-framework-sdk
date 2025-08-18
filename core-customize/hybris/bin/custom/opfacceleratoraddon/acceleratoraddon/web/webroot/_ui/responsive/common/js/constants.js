@@ -19,6 +19,7 @@ const AppConstants = {
   EMAIL_PATTERN:
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
   // Regular expression for basic email validation
+  DEFAULT_FIELD_VALUE: "[FIELD_NOT_SET]",
 };
 
 // Expose AppConstants globally for cross-file access
@@ -72,4 +73,11 @@ window.OpfPaymentErrorType = {
   PAYMENT_REJECTED: "PAYMENT_REJECTED",
   PAYMENT_CANCELLED: "PAYMENT_CANCELLED",
   STATUS_NOT_RECOGNIZED: "STATUS_NOT_RECOGNIZED",
+};
+
+window.ApplePayShippingType = {
+  SHIPPING: "shipping",
+  DELIVERY: "delivery",
+  STORE_PICKUP: "storePickup",
+  SERVICE_PICKUP: "servicePickup",
 };

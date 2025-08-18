@@ -11,8 +11,19 @@
 
 window.Opf = window.Opf || {};
 
+// Detect logout form submit to skip CTA flow
+$(document).on("submit", "#logoutForm", function () {
+  sessionStorage.setItem("skipCtaFlow", true);
+});
+
 $(document).ready(function () {
   'use strict';
+
+  // Skip CTA flow if logout just happened
+  if (sessionStorage.getItem("skipCtaFlow")) {
+    sessionStorage.removeItem("skipCtaFlow");
+    return;
+  }
 
   const error = sessionStorage.getItem('globalError');
   if (error) {
@@ -40,6 +51,27 @@ $(document).ready(function () {
   });
 });
 
+/**
+ * Sets up fallback for Klarna's `scriptReady` and `KlarnaOnsiteService` to prevent runtime errors.
+ * - Adds `window.Opf.payments.global.scriptReady` if missing.
+ * - Initializes `window.KlarnaOnsiteService` as an array if undefined.
+ */
+function setupKlarnaFallbackHandlers() {
+  const globalContainer = getGlobalFunctionContainer('global');
+
+  if (typeof globalContainer.scriptReady !== 'function') {
+    globalContainer.scriptReady = function (scriptIdentifier) {
+      console.warn(
+        `Fallback scriptReady called with scriptIdentifier: ${scriptIdentifier}`
+      );
+    };
+  }
+
+  if (!Array.isArray(window.KlarnaOnsiteService)) {
+    window.KlarnaOnsiteService = [];
+    console.warn('Initialized window.KlarnaOnsiteService as an empty array.');
+  }
+}
 
 /**
  * Sends a POST request to the OPF CTA script rendering API and injects the returned dynamic script and HTML into the page.
@@ -108,6 +140,7 @@ function loadOpfCtaScript(selectedLanguage, ctaScriptContext, paymentAccountIds)
 
         const container = document.getElementById("opf-cta-script");
         if (container) {
+          setupKlarnaFallbackHandlers();
           container.innerHTML = response.value[0].dynamicScript.html;
           executeScriptFromHtml(response.value[0].dynamicScript.html);
           scriptReady(ctaScriptContext, scriptIdentifier);
@@ -120,12 +153,21 @@ function loadOpfCtaScript(selectedLanguage, ctaScriptContext, paymentAccountIds)
   });
 }
 
+/**
+ * Extracts and parses a numeric value from the HTML content of a given selector.
+ * Non-numeric characters (except the decimal point) are stripped before parsing.
+ */
+function extractNumericHtmlValue(selector) {
+  const val = $(selector).html() || '';
+  return parseFloat(val.trim().replace(/[^\d.]+/g, '')) || 0;
+}
+
 function scriptReady(ctaScriptContext, scriptIdentifier) {
   const productInfo = [];
 
   // Check if the script is running on the Product Detail Page (PDP)
   if (ctaScriptContext.indexOf('PDP') > -1) {
-    const productPrice = $('.price').html().trim().replace(/[^\d.]+/g, "");
+    const productPrice = extractNumericHtmlValue('.price');
     const quantity = $('#pdpAddtoCartInput').val() || 0;
 
     // Build the product info object for PDP
@@ -137,7 +179,7 @@ function scriptReady(ctaScriptContext, scriptIdentifier) {
     });
 
     // Send the product data to Klarna
-    dispatchProductEvents(productInfo, scriptIdentifier);
+    dispatchOpfEvent('opfProductAmountChanged', { productInfo, scriptIdentifier });
 
     // Attach a delegated listener to the add-to-cart container
     // This captures both 'input' (typing) and 'click' (on +/- buttons) events
@@ -156,8 +198,8 @@ function scriptReady(ctaScriptContext, scriptIdentifier) {
           // Get the updated quantity from the input field
           const updatedQty = parseInt($input.val()) || 1;
 
-          // Get the current selling price from the DOM, stripping the '$' symbol
-          const updatedPrice = $('.price').html().trim().replace(/[^\d.]+/g, "");
+          // Get the current selling price from the DOM, stripping the currency symbol
+          const updatedPrice = extractNumericHtmlValue('.price');
 
           // Create a product info object to pass to the tracking function
           const updatedProductInfo = [{
@@ -168,7 +210,7 @@ function scriptReady(ctaScriptContext, scriptIdentifier) {
           }];
 
           // Dispatch the event to Klarna
-          dispatchProductEvents(updatedProductInfo, scriptIdentifier);
+          dispatchOpfEvent('opfProductAmountChanged', { productInfo: updatedProductInfo, scriptIdentifier });
         }, 0);
       }
     });
@@ -183,33 +225,19 @@ function scriptReady(ctaScriptContext, scriptIdentifier) {
     };
 
     // Send the cart data to Klarna
-    dispatchCartEvents(cart, scriptIdentifier);
+    dispatchOpfEvent('opfCartChanged', { cart, scriptIdentifier });
   }
 }
 
-function dispatchProductEvents(productInfo,scriptIdentifiers) {
-    const event = new CustomEvent('opfProductAmountChanged', {
-        detail: {
-            productInfo: productInfo,
-            scriptIdentifiers: scriptIdentifiers
-        }
-    });
-
-    // Dispatch the event globally
-    window.dispatchEvent(event);
+/**
+ * Dispatches a custom OPF event on the global window object.
+ * Useful for notifying scripts like Klarna about changes in cart or product data.
+ */
+function dispatchOpfEvent(eventType, detail) {
+  const event = new CustomEvent(eventType, { detail });
+  window.dispatchEvent(event);
 }
 
-function dispatchCartEvents(cart,scriptIdentifiers) {
-const event = new CustomEvent('opfCartChanged', {
-        detail: {
-            cart: cart,
-            scriptIdentifiers: scriptIdentifiers
-        }
-    });
-
-    // Dispatch the event globally
-    window.dispatchEvent(event);
-    }
 /**
  * Get Script identifiers for CTA script
  * Count will increase on each page visit and will be reset once the browser tab is closed.
@@ -701,6 +729,25 @@ function attemptAjaxSubmit({ url, payload, maxRetries, onSuccess, onError }) {
 }
 
 /**
+ * Redirects to the order confirmation page using the appropriate order code.
+ * - Uses `guid` if the user is a guest (anonymous checkout).
+ * - Uses `code` if the user is registered.
+ */
+function handleOrderPlacement(orderResponse) {
+  const code =
+    orderResponse?.user?.name === AppConstants.OCC_USER_ID_GUEST
+      ? orderResponse?.guid
+      : orderResponse?.code;
+
+  if (!code) {
+    throw new Error('Empty or invalid order response: missing code or guid.');
+  }
+
+  const encodedContextPath = removeLeadingSlashes(ACC.config.encodedContextPath);
+  window.location.href = `${window.location.origin}/${encodedContextPath}/checkout/orderConfirmation/${code}`;
+}
+
+/**
  * Evaluates the payment status from response and routes to correct callback.
  * Used by both submit & submitComplete to handle response consistently.
  */
@@ -717,17 +764,7 @@ function handlePaymentResponse(response, { submitSuccess, submitPending, submitF
         return placePaymentAuthorizedOrder();
       })
       .then((orderResponse) => {
-        const code =
-          orderResponse?.user?.name === AppConstants.OCC_USER_ID_GUEST
-            ? orderResponse?.guid
-            : orderResponse?.code;
-
-        if (code) {
-          const encodedContextPath = removeLeadingSlashes(
-            ACC.config.encodedContextPath
-          );
-          window.location.href = `${window.location.origin}/${encodedContextPath}/checkout/orderConfirmation/${code}`;
-        }
+        handleOrderPlacement(orderResponse);
       })
       .catch((err) => {
         console.error('Order placement failed:', err);
@@ -1037,11 +1074,7 @@ window.Opf.verifyPayment = function(requestMap) {
       .then(() => {
         return placePaymentAuthorizedOrder()
           .then(orderResponse => {
-            if (orderResponse?.code) {
-              window.location.href = `${window.location.origin}/${encodedContextPath}/checkout/orderConfirmation/${orderResponse.code}`;
-            } else {
-              throw new Error('Empty order response');
-            }
+            handleOrderPlacement(orderResponse);
           });
       })
       .catch(error => {

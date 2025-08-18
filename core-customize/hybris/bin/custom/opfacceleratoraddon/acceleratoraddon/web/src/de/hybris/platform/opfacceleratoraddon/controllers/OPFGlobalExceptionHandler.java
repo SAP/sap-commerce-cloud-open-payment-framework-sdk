@@ -22,6 +22,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.hybris.platform.util.Sanitizer.sanitize;
@@ -125,6 +126,52 @@ public class OPFGlobalExceptionHandler {
     }
 
     /**
+     * Handle the exception other than validation
+     *
+     * @param errorListDto
+     *         Error list DTO
+     * @param cause
+     *         Throwable cause
+     * @return ErrorListWsDTO
+     */
+    public ErrorListWsDTO handleException(ErrorListWsDTO errorListDto, Throwable cause) {
+        Throwable rootCause = cause.getCause();
+        if (rootCause instanceof HttpClientErrorException httpEx) {
+            errorListDto.setErrors(Collections.singletonList(
+                    populateErrorDTO(cause.getClass().getSimpleName().replace("Exception", "Error"),
+                            "There was an error encountered during the processing of the request.", sanitize(httpEx.getMessage()),
+                            String.valueOf(httpEx.getRawStatusCode()))));
+        } else if (rootCause instanceof CCAdapterClientException ccEx) {
+            errorListDto.setErrors(Collections.singletonList(
+                    populateErrorDTO(cause.getClass().getSimpleName().replace("Exception", "Error"),
+                            "Client error encountered during processing.", sanitize(ccEx.getMessage()),
+                            String.valueOf(HttpStatus.BAD_REQUEST.value()))));
+        } else {
+            errorListDto.setErrors(Collections.singletonList(
+                    populateErrorDTO(cause.getClass().getSimpleName().replace("Exception", "Error"), StringUtils.EMPTY,
+                            sanitize(Optional.ofNullable(rootCause).map(Throwable::getMessage).orElse(cause.getMessage())),
+                            String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()))));
+        }
+        return errorListDto;
+    }
+
+    /**
+     * Check for OPFRequestValidationException instance
+     *
+     * @param cause
+     *         throwable
+     * @return OPFRequestValidationException
+     */
+    private OPFRequestValidationException getValidationException(Throwable cause) {
+        if (cause instanceof OPFRequestValidationException ex) {
+            return ex;
+        } else if (cause != null && cause.getCause() instanceof OPFRequestValidationException innerEx) {
+            return innerEx;
+        }
+        return null;
+    }
+
+    /**
      * Create and populate Error
      *
      * @param type
@@ -144,57 +191,6 @@ public class OPFGlobalExceptionHandler {
         errorDto.setExceptionMessage(exceptionMessage);
         errorDto.setErrorCode(errorCode);
         return errorDto;
-    }
-
-    /**
-     * Handle the exception other than validation
-     *
-     * @param errorListDto
-     *         Errorlist
-     * @param cause
-     *         throwable
-     * @return ErrorListWsDTO
-     */
-    public ErrorListWsDTO handleException(ErrorListWsDTO errorListDto, Throwable cause) {
-        final ErrorWsDTO error = new ErrorWsDTO();
-        error.setType(cause.getClass().getSimpleName().replace("Exception", "Error"));
-        String exceptionMessage = StringUtils.EMPTY;
-        String errorCode = StringUtils.EMPTY;
-        String message = StringUtils.EMPTY;
-        if (cause.getCause() instanceof HttpClientErrorException httpEx) {
-            exceptionMessage = sanitize(httpEx.getMessage());
-            errorCode = String.valueOf(httpEx.getRawStatusCode());
-            message = "There was an error encountered during the processing of the request.";
-        } else if (cause.getCause() instanceof CCAdapterClientException ccEx) {
-            exceptionMessage = sanitize(ccEx.getMessage());
-            errorCode = String.valueOf(HttpStatus.BAD_REQUEST.value());
-            message = "Client error encountered during processing.";
-        } else {
-            // Handle all other uncaught exceptions
-            exceptionMessage = sanitize(cause.getCause().getMessage());
-            errorCode = String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        }
-        error.setExceptionMessage(exceptionMessage);
-        error.setErrorCode(errorCode);
-        error.setMessage(message);
-        errorListDto.setErrors(Collections.singletonList(error));
-        return errorListDto;
-    }
-
-    /**
-     * Check for OPFRequestValidationException instance
-     *
-     * @param cause
-     *         throwable
-     * @return OPFRequestValidationException
-     */
-    private OPFRequestValidationException getValidationException(Throwable cause) {
-        if (cause instanceof OPFRequestValidationException ex) {
-            return ex;
-        } else if (cause != null && cause.getCause() instanceof OPFRequestValidationException innerEx) {
-            return innerEx;
-        }
-        return null;
     }
 }
 

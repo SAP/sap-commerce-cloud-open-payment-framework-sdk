@@ -4,22 +4,29 @@
 package de.hybris.platform.service.impl;
 
 import de.hybris.platform.client.OPFHttpClient;
+import de.hybris.platform.core.model.user.UserModel;
 import de.hybris.platform.cta.request.OPFPaymentCTARequest;
 import de.hybris.platform.data.response.OPFActiveConfigResponse;
 import de.hybris.platform.cta.response.OPFPaymentCTAResponse;
 import de.hybris.platform.opf.data.OPFInitiatePaymentSessionRequestData;
 import de.hybris.platform.opf.data.OPFPaymentSubmitCompleteRequestData;
+import de.hybris.platform.opf.data.request.OPFApplePayRequest;
+import de.hybris.platform.opf.data.response.OPFApplePayResponse;
 import de.hybris.platform.opf.dto.OPFInitiatePaymentSessionResponse;
 import de.hybris.platform.opf.dto.OPFPaymentAttribute;
 import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteResponse;
 import de.hybris.platform.opfservices.client.CCAdapterClientException;
 import de.hybris.platform.opfservices.dtos.http.HttpClientRequestDto;
+import de.hybris.platform.order.CartService;
 import de.hybris.platform.servicelayer.config.ConfigurationService;
 import de.hybris.platform.opf.data.request.OPFPaymentSubmitRequest;
 import de.hybris.platform.opf.data.response.OPFPaymentSubmitResponse;
+import de.hybris.platform.core.model.order.CartModel;
+import de.hybris.platform.core.model.order.payment.SAPGenericPaymentInfoModel;
 
 import de.hybris.platform.opf.dto.OPFPaymentVerifyRequest;
 import de.hybris.platform.opf.dto.OPFPaymentVerifyResponse;
+import de.hybris.platform.servicelayer.model.ModelService;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -54,6 +61,12 @@ public class DefaultOPFAcceleratorServiceTest {
 
     @Mock
     private OPFPaymentCTARequest opfPaymentCTARequest;
+
+    @Mock
+    private CartService cartService;
+
+    @Mock
+    private ModelService modelService;
 
     String clientId = "mock-client-id";
     String publicKey = "mock-public-key";
@@ -377,6 +390,97 @@ public class DefaultOPFAcceleratorServiceTest {
 
         Boolean result = paymentService.validatePaymentStatus(response);
         Assertions.assertFalse(result);
+    }
+
+    @Test
+    void setPaymentInfo_createsPaymentInfoWhenNoneExists() {
+        CartModel cartModel = mock(CartModel.class);
+        SAPGenericPaymentInfoModel paymentInfo = mock(SAPGenericPaymentInfoModel.class);
+        when(cartService.getSessionCart()).thenReturn(cartModel);
+        when(cartModel.getPaymentInfo()).thenReturn(null);
+        when(cartModel.getUser()).thenReturn(mock(UserModel.class));
+        when(modelService.create(SAPGenericPaymentInfoModel.class)).thenReturn(paymentInfo);
+
+        paymentService.setPaymentInfo();
+
+        verify(modelService).create(SAPGenericPaymentInfoModel.class);
+        verify(modelService).save(paymentInfo);
+        verify(cartModel).setPaymentInfo(paymentInfo);
+        verify(modelService).save(cartModel);
+        verify(modelService).refresh(cartModel);
+    }
+
+    @Test
+    void setPaymentInfo_doesNothingWhenPaymentInfoExists() {
+        CartModel cartModel = mock(CartModel.class);
+        SAPGenericPaymentInfoModel existingPaymentInfo = mock(SAPGenericPaymentInfoModel.class);
+
+        when(cartService.getSessionCart()).thenReturn(cartModel);
+        when(cartModel.getPaymentInfo()).thenReturn(existingPaymentInfo);
+
+        paymentService.setPaymentInfo();
+
+        verify(modelService, never()).create(SAPGenericPaymentInfoModel.class);
+        verify(modelService, never()).save(any());
+        verify(cartModel, never()).setPaymentInfo(any());
+    }
+
+    @Test
+    void setPaymentInfo_handlesNullCartGracefully() {
+
+        when(cartService.getSessionCart()).thenReturn(null);
+
+        paymentService.setPaymentInfo();
+
+        verify(modelService, never()).create(SAPGenericPaymentInfoModel.class);
+        verify(modelService, never()).save(any());
+    }
+
+    @Test
+    void getApplePayWebSession_validRequest_returnsPopulatedResponse() {
+        OPFApplePayRequest request = new OPFApplePayRequest();
+        OPFApplePayResponse expectedResponse = new OPFApplePayResponse();
+        Configuration configuration = mock(Configuration.class);
+        doReturn(configuration).when(configurationService).getConfiguration();
+        doReturn("/mock-applepay-web-session-url").when(configuration).getString("opf.applepay.web.session.url", StringUtils.EMPTY);
+        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+                .thenReturn(expectedResponse);
+
+        OPFApplePayResponse actualResponse = paymentService.getApplePayWebSession(request);
+
+        Assertions.assertNotNull(actualResponse);
+        Assertions.assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    void getApplePayWebSession_nullRequest_throwsException() {
+        Assertions.assertThrows(NullPointerException.class, () -> paymentService.getApplePayWebSession(null));
+    }
+
+    @Test
+    void getApplePayWebSession_httpClientReturnsNull_returnsNullResponse() {
+        OPFApplePayRequest request = new OPFApplePayRequest();
+        Configuration configuration = mock(Configuration.class);
+        doReturn(configuration).when(configurationService).getConfiguration();
+        doReturn("/mock-applepay-web-session-url").when(configuration).getString("opf.applepay.web.session.url", StringUtils.EMPTY);
+        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+                .thenReturn(null);
+
+        OPFApplePayResponse actualResponse = paymentService.getApplePayWebSession(request);
+
+        Assertions.assertNull(actualResponse);
+    }
+
+    @Test
+    void getApplePayWebSession_httpClientThrowsException_propagatesException() {
+        OPFApplePayRequest request = new OPFApplePayRequest();
+
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+                .thenThrow(new RuntimeException("HTTP client error"));
+
+        Assertions.assertThrows(RuntimeException.class, () -> paymentService.getApplePayWebSession(request));
     }
 
 }

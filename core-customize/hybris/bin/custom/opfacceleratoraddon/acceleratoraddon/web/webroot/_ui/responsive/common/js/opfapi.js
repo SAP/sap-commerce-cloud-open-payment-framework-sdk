@@ -12,7 +12,8 @@
 (function (window) {
   // Helper: fetch wrapper that handles JSON parsing and errors uniformly
   function fetchWithHandling(url, options = {}, parseJson = true) {
-    return fetch(url, options).then((response) => {
+    const urlWithContext = `${ACC.config.encodedContextPath}${url}`;
+    return fetch(urlWithContext, options).then((response) => {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -22,9 +23,10 @@
 
   // Helper: observable wrapper for jQuery Ajax calls, supporting all HTTP verbs
   function ajaxObservable({ url, method = "GET", data = null, headers = {} }) {
+    const urlWithContext = `${ACC.config.encodedContextPath}${url}`;
     return new rxjs.Observable((observer) => {
       $.ajax({
-        url,
+        url: urlWithContext,
         method,
         contentType: "application/json",
         data: data,
@@ -49,7 +51,7 @@
    * Returns an Observable emitting the delivery modes array.
    */
   function getSupportedDeliveryModes() {
-    const url = `${ACC.config.encodedContextPath}/opf/cart/deliverymodes`;
+    const url = "/opf/cart/deliverymodes";
     const promise = fetchWithHandling(url).then(
       (data) => data.deliveryModes || []
     );
@@ -58,11 +60,11 @@
 
   /**
    * PUT: Set the selected delivery mode.
-   * @param {string} modeModeId - delivery mode id to set.
+   * @param {string} modeId - delivery mode id to set.
    * Returns Observable that completes when done.
    */
-  function setDeliveryMode(modeModeId) {
-    const url = `${ACC.config.encodedContextPath}/opf/cart/deliverymode?deliveryModeId=${modeModeId}`;
+  function setDeliveryMode(modeId) {
+    const url = `/opf/cart/deliverymode?deliveryModeId=${modeId}`;
     const promise = fetchWithHandling(
       url,
       {
@@ -80,7 +82,7 @@
    * Returns Observable emitting response JSON or empty array.
    */
   function setDeliveryAddress(address) {
-    const url = `${ACC.config.encodedContextPath}/opf/cart/addresses/delivery`;
+    const url = "/opf/cart/addresses/delivery";
 
     return ajaxObservable({
       url,
@@ -93,7 +95,7 @@
    * Fetches active OPF payment configurations from the backend.
    */
   function fetchActiveConfigs() {
-    const url = `${ACC.config.encodedContextPath}/opf-payment/active-configurations`;
+    const url = "/opf-payment/active-configurations";
     return fetchWithHandling(url).then((data) => data.value || []);
   }
 
@@ -102,7 +104,7 @@
    * Returns Observable emitting response info.
    */
   function createCartGuestUser() {
-    const url = `${ACC.config.contextPath}/opf/cart/guestuser`;
+    const url = "/opf/cart/guestuser";
     return ajaxObservable({ url, method: "POST" });
   }
 
@@ -112,7 +114,7 @@
    * Returns Observable emitting update confirmation.
    */
   function updateCartGuestUserEmail(email) {
-    const url = `${ACC.config.contextPath}/opf/cart/guestuser`;
+    const url = "/opf/cart/guestuser";
     return ajaxObservable({
       url,
       method: "PATCH",
@@ -125,8 +127,18 @@
    * Returns Observable emitting response or empty array.
    */
   function setPaymentInfo() {
-    const url = `${ACC.config.encodedContextPath}/opf/cart/paymentinfo`;
+    const url = "/opf/cart/paymentinfo";
     return ajaxObservable({ url, method: "POST" });
+  }
+
+  function getApplePayWebSession(request) {
+    const url = "/opf-payment/applepay-web-session";
+
+    return ajaxObservable({
+      url,
+      method: "POST",
+      data: JSON.stringify(request),
+    });
   }
 
   window.OpfApis = {
@@ -137,5 +149,6 @@
     updateCartGuestUserEmail,
     setPaymentInfo,
     fetchActiveConfigs,
+    getApplePayWebSession,
   };
 })(window);

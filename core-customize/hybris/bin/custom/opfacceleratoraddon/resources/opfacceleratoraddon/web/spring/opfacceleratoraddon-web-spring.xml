@@ -91,4 +91,8 @@
 		<constructor-arg ref="i18NService"/>
 		<constructor-arg ref="configurationService"/>
 	</bean>
+
+	<bean depends-on="logoutRestrictedPages" parent="listMergeDirective" >
+		<property name="add" value="/cart"/>
+	</bean>
 </beans>
