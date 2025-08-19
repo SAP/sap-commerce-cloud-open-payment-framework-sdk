@@ -78,6 +78,9 @@
     <bean id="opfAcceleratorService" class="de.hybris.platform.service.impl.DefaultOPFAcceleratorService">
         <constructor-arg name="opfHttpClient" ref="opfHttpClient"/>
         <constructor-arg name="configurationService" ref="configurationService"/>
+        <constructor-arg name="cartService" ref="cartService"/>
+        <constructor-arg name="modelService" ref="modelService"/>
+
     </bean>
 
     <bean id="opfAcceleratorFacade" class="de.hybris.platform.facade.impl.DefaultOPFAcceleratorFacade">

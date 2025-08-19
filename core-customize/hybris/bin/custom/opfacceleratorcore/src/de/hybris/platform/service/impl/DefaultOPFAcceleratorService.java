@@ -73,9 +73,8 @@ public class DefaultOPFAcceleratorService implements OPFAcceleratorService {
     private ConfigurationService configurationService;
     @Resource(name = "opfAcceleratorRestTemplate")
     RestTemplate opfAcceleratorRestTemplate;
-    @Resource(name = "cartService")
+
     private CartService cartService;
-    @Resource(name = "modelService")
     private ModelService modelService;
     private CheckoutFacade checkoutFacade;
     private OPFHttpClient opfHttpClient;
@@ -88,10 +87,12 @@ public class DefaultOPFAcceleratorService implements OPFAcceleratorService {
      * @param checkoutFacade OOTB checkoutFacade
      */
     public DefaultOPFAcceleratorService(final OPFHttpClient opfHttpClient, final ConfigurationService configurationService,
-          final CheckoutFacade checkoutFacade) {
+            final CheckoutFacade checkoutFacade, final CartService cartService, final ModelService modelService) {
         this.opfHttpClient = opfHttpClient;
         this.configurationService = configurationService;
         this.checkoutFacade = checkoutFacade;
+        this.cartService = cartService;
+        this.modelService = modelService;
     }
 
     /**

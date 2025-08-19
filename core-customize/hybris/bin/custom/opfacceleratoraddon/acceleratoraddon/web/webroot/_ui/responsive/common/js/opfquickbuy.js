@@ -49,18 +49,21 @@ function initQuickBuy(activeConfiguration) {
 
   activeConfiguration.digitalWalletQuickBuy.forEach((wallet) => {
     if (!wallet || !wallet.enabled) return;
+    const PROTOCOL = "https:";
 
     // load RxJS
-    loadScript("https://unpkg.com/rxjs/dist/bundles/rxjs.umd.min.js", "rxjs")
+    loadScript(
+      `${PROTOCOL}//unpkg.com/rxjs/dist/bundles/rxjs.umd.min.js`,
+      "rxjs"
+    )
       .then(() => {
         switch (wallet.provider) {
           case OpfQuickBuyProviderType.APPLE_PAY:
-            // applePayQuickBuy(activeConfiguration);
+            applePayQuickBuy(activeConfiguration);
             break;
-
           case OpfQuickBuyProviderType.GOOGLE_PAY:
             return loadScript(
-              "https://pay.google.com/gp/p/js/pay.js",
+              `${PROTOCOL}//pay.google.com/gp/p/js/pay.js`,
               "google-pay-js"
             ).then(() => {
               // Google Pay script loaded, continue
@@ -104,7 +107,6 @@ function fetchEnabledQuickBuyProvider(configs) {
  * Dynamic Script Loading Added for Google Pay and RxJS
  * Implemented a reusable loadScript(src, id) function that returns a Promise,
  * allowing scripts to load asynchronously and enabling conditional loading based on server config.
- *
  * This improves page performance by avoiding unnecessary loading of third-party scripts.
  *
  */
@@ -124,4 +126,61 @@ function loadScript(src, id) {
     script.onerror = reject;
     document.head.appendChild(script);
   });
+}
+
+// ------------------------------
+// Common Methods for Apple & Google Pay
+// ------------------------------
+
+/**
+ * Returns observable to ensure cart guest user presence as needed.
+ * Checks if user logged in or guest cart; otherwise triggers guest cart creation.
+ * @returns {Observable}
+ */
+function handleCartGuestUser() {
+  return rxjs
+    .combineLatest([
+      OpfUtils.isUserLoggedIn(cartData),
+      OpfUtils.isGuestCart(cartData),
+    ])
+    .pipe(
+      rxjs.take(1),
+      rxjs.switchMap(([isLoggedIn, isGuest]) => {
+        if (isLoggedIn || isGuest) {
+          return rxjs.of(true);
+        }
+        return OpfApis.createCartGuestUser();
+      })
+    );
+}
+
+/**
+ * Retrieves the merchant name from cart data or returns the quick buy default.
+ * @returns {string}
+ */
+function getMerchantName() {
+  return cartData?.store ?? AppConstants.OPF_QUICK_BUY_DEFAULT_MERCHANT_NAME;
+}
+
+/**
+ * Builds delivery info object for transaction, includes delivery type and optional pickup details.
+ * @returns {object}
+ */
+function getTransactionDeliveryInfo() {
+  return {
+    type: getTransactionDeliveryType(),
+    pickupDetails: undefined, // Reserved for future pickup data
+  };
+}
+
+/**
+ * Determines the delivery type based on cart contents.
+ * Returns SHIPPING if there are delivery items; otherwise PICKUP.
+ * @returns {string}
+ */
+function getTransactionDeliveryType() {
+  const hasDeliveryItems = cartData?.deliveryItemsQuantity > 0;
+  return hasDeliveryItems
+    ? OpfQuickBuyDeliveryType.SHIPPING
+    : OpfQuickBuyDeliveryType.PICKUP;
 }

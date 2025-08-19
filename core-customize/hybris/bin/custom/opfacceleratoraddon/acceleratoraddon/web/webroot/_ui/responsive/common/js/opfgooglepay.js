@@ -18,8 +18,8 @@ var googlePaymentClientOptions = {
 var googlePaymentClient;
 
 // References to initial Google Pay payment request and transaction details defaults
-var googlePaymentRequest = GooglePayDefaults.initialGooglePaymentRequest;
-var transactionDetails = GooglePayDefaults.initialTransactionDetails;
+var googlePaymentRequest = QuickBuyDefaults.initialGooglePaymentRequest;
+var transactionDetails = QuickBuyDefaults.initialTransactionDetails;
 
 /**
  * Initializes Google Pay Quick Buy flow with the given config
@@ -76,7 +76,7 @@ function setGooglePaymentRequestConfig(deliveryType, merchantName) {
       },
     };
     googlePaymentRequest = {
-      ...GooglePayDefaults.initialGooglePaymentRequest,
+      ...QuickBuyDefaults.initialGooglePaymentRequest,
       shippingAddressRequired: false,
       shippingOptionRequired: false,
       callbackIntents: ["PAYMENT_AUTHORIZATION"],
@@ -86,7 +86,7 @@ function setGooglePaymentRequestConfig(deliveryType, merchantName) {
       ...googlePaymentClientOptions,
       paymentDataCallbacks: handlePaymentCallbacks(),
     };
-    googlePaymentRequest = { ...GooglePayDefaults.initialGooglePaymentRequest };
+    googlePaymentRequest = { ...QuickBuyDefaults.initialGooglePaymentRequest };
   }
   // Update merchant name dynamically
   googlePaymentRequest.merchantInfo.merchantName = merchantName;
@@ -210,70 +210,17 @@ function handleActiveCartTransaction() {
           googlePaymentRequest.transactionInfo = {
             totalPrice:
               cartData.totalPrice.value ||
-              GooglePayDefaults.initialTransactionInfo.totalPrice,
+              QuickBuyDefaults.initialTransactionInfo.totalPrice,
             currencyCode:
               cartData.totalPrice.currencyIso ||
-              GooglePayDefaults.initialTransactionInfo.currencyCode,
+              QuickBuyDefaults.initialTransactionInfo.currencyCode,
             totalPriceStatus:
-              GooglePayDefaults.initialTransactionInfo.totalPriceStatus,
+              QuickBuyDefaults.initialTransactionInfo.totalPriceStatus,
           };
         })
       );
     })
   );
-}
-
-/**
- * Returns observable to ensure cart guest user presence as needed.
- * Checks if user logged in or guest cart; otherwise triggers guest cart creation.
- * @returns {Observable}
- */
-function handleCartGuestUser() {
-  return rxjs
-    .combineLatest([
-      OpfUtils.isUserLoggedIn(cartData),
-      OpfUtils.isGuestCart(cartData),
-    ])
-    .pipe(
-      rxjs.take(1),
-      rxjs.switchMap(([isLoggedIn, isGuest]) => {
-        if (isLoggedIn || isGuest) {
-          return rxjs.of(true);
-        }
-        return OpfApis.createCartGuestUser();
-      })
-    );
-}
-
-/**
- * Retrieves the merchant name from cart data or returns the quick buy default.
- * @returns {string}
- */
-function getMerchantName() {
-  return cartData?.store ?? AppConstants.OPF_QUICK_BUY_DEFAULT_MERCHANT_NAME;
-}
-
-/**
- * Builds delivery info object for transaction, includes delivery type and optional pickup details.
- * @returns {object}
- */
-function getTransactionDeliveryInfo() {
-  return {
-    type: getTransactionDeliveryType(),
-    pickupDetails: undefined, // Reserved for future pickup data
-  };
-}
-
-/**
- * Determines the delivery type based on cart contents.
- * Returns SHIPPING if there are delivery items; otherwise PICKUP.
- * @returns {string}
- */
-function getTransactionDeliveryType() {
-  const hasDeliveryItems = cartData?.deliveryItemsQuantity > 0;
-  return hasDeliveryItems
-    ? OpfQuickBuyDeliveryType.SHIPPING
-    : OpfQuickBuyDeliveryType.PICKUP;
 }
 
 /**
@@ -284,7 +231,7 @@ function getTransactionDeliveryType() {
 function initTransaction() {
   // Reset transaction details with a fresh copy of defaults and empty address list
   transactionDetails = {
-    ...GooglePayDefaults.initialTransactionDetails,
+    ...QuickBuyDefaults.initialTransactionDetails,
     addressIds: [],
   };
 
@@ -444,11 +391,6 @@ function prepareAndSubmitPayment(paymentDataResponse) {
   );
 
   const submitRequest = {
-    callbacks: {
-      onSuccess: () => {},
-      onPending: () => {},
-      onFailure: () => {},
-    },
     additionalData: [],
     encryptedToken,
     paymentSessionId: "",
@@ -465,19 +407,14 @@ function prepareAndSubmitPayment(paymentDataResponse) {
 
   return new rxjs.Observable((observer) => {
     const callback = {
-      submitSuccess: function () {
-        /* TODO: implement if needed */
-      },
-      submitPending: function () {
-        /* TODO: implement if needed */
-      },
-      submitFailure: function () {
-        /* TODO: implement if needed */
-      },
+      submitSuccess: function () {},
+      submitPending: function () {},
+      submitFailure: function () {},
     };
 
+    submitRequest.callbacks = callback;
+
     opfPaymentSubmit(submitRequest, callback, "");
-    // Note: opfPaymentSubmit must notify observer accordingly; considered external
   });
 }
 
@@ -545,7 +482,7 @@ function setAllowedPaymentMethodsConfig(activeConfiguration) {
 
   googlePaymentRequest.allowedPaymentMethods = [
     {
-      parameters: { ...GooglePayDefaults.defaultGooglePayCardParameters },
+      parameters: { ...QuickBuyDefaults.defaultGooglePayCardParameters },
       tokenizationSpecification: {
         parameters: {
           gateway: String(googlePayConfig?.googlePayGateway),

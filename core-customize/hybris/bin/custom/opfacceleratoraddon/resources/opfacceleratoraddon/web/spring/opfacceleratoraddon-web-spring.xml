@@ -91,4 +91,16 @@
 		<constructor-arg ref="i18NService"/>
 		<constructor-arg ref="configurationService"/>
 	</bean>
+
+	<bean depends-on="logoutRestrictedPages" parent="listMergeDirective" >
+		<property name="add" value="/cart"/>
+	</bean>
+
+	<alias name="defaultRefererExcludeUrlSet" alias="refererExcludeUrlSet"/>
+	<util:set id="defaultRefererExcludeUrlSet" value-type="java.lang.String">
+		<value>/**/cart/export</value>
+		<value>/orbeon/**</value>
+		<value>/**/opf-payment/active-configurations</value>
+	</util:set>
+
 </beans>

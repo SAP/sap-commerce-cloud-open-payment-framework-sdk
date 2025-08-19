@@ -1,36 +1,41 @@
 /*
  * [y] hybris Platform
  *
- * Copyright (c) 2025 SAP SE or an SAP affiliate company.  All rights reserved.
+ * Copyright (c) 2025 SAP SE or an SAP affiliate company.
+ * All rights reserved.
  *
- * This software is the confidential and proprietary information of SAP
- * ("Confidential Information"). You shall not disclose such Confidential
- * Information and shall use it only in accordance with the terms of the
- * license agreement you entered into with SAP.
+ * Confidential and proprietary information of SAP.
  */
 
 (function (window) {
-  // Helper: fetch wrapper that handles JSON parsing and errors uniformly
-  function fetchWithHandling(url, options = {}, parseJson = true) {
-    return fetch(url, options).then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return parseJson ? response.json() : response;
-    });
-  }
-
-  // Helper: observable wrapper for jQuery Ajax calls, supporting all HTTP verbs
-  function ajaxObservable({ url, method = "GET", data = null, headers = {} }) {
+  /**
+   * Unified AJAX utility returning an RxJS Observable.
+   * Handles all HTTP verbs, errors, cancellation, and content types.
+   * @param {object} config - {url, method, data, headers, parseJson}
+   */
+  function ajaxObservable({
+    url,
+    method = "GET",
+    data = null,
+    headers = {},
+    parseJson = true,
+  }) {
+    const urlWithContext = `${ACC.config.encodedContextPath}${url}`;
     return new rxjs.Observable((observer) => {
-      $.ajax({
-        url,
+      const useContentType =
+        headers["Content-Type"] ||
+        (["POST", "PUT", "PATCH"].includes(method)
+          ? "application/json"
+          : undefined);
+
+      const jqXHR = $.ajax({
+        url: urlWithContext,
         method,
-        contentType: "application/json",
-        data: data,
-        headers: headers,
+        contentType: useContentType,
+        data,
+        headers,
         success: (response) => {
-          observer.next(response || []); // Always emit value or empty array
+          observer.next(parseJson ? response : response);
           observer.complete();
         },
         error: (xhr, status, error) => {
@@ -41,92 +46,104 @@
           );
         },
       });
+      // RxJS cancellation
+      return () => jqXHR && jqXHR.abort && jqXHR.abort();
     });
   }
 
   /**
-   * GET: Retrieve supported delivery modes as array.
-   * Returns an Observable emitting the delivery modes array.
+   * Fetches delivery modes; returns Observable emitting array.
    */
   function getSupportedDeliveryModes() {
-    const url = `${ACC.config.encodedContextPath}/opf/cart/deliverymodes`;
-    const promise = fetchWithHandling(url).then(
-      (data) => data.deliveryModes || []
+    return ajaxObservable({ url: "/opf/cart/deliverymodes" }).pipe(
+      rxjs.operators.map((data) => data.deliveryModes || [])
     );
-    return rxjs.from(promise);
   }
 
   /**
-   * PUT: Set the selected delivery mode.
-   * @param {string} modeModeId - delivery mode id to set.
-   * Returns Observable that completes when done.
+   * Sets delivery mode; returns Observable.
    */
-  function setDeliveryMode(modeModeId) {
-    const url = `${ACC.config.encodedContextPath}/opf/cart/deliverymode?deliveryModeId=${modeModeId}`;
-    const promise = fetchWithHandling(
-      url,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-      },
-      false
-    ); // no JSON parse on response expected
-    return rxjs.from(promise);
+  function setDeliveryMode(modeId) {
+    return ajaxObservable({
+      url: `/opf/cart/deliverymode?deliveryModeId=${modeId}`,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      parseJson: false,
+    });
   }
 
   /**
-   * POST: Set/update delivery address.
-   * @param {object} address - JSON address object.
-   * Returns Observable emitting response JSON or empty array.
+   * Sets delivery address; returns Observable.
    */
   function setDeliveryAddress(address) {
-    const url = `${ACC.config.encodedContextPath}/opf/cart/addresses/delivery`;
-
     return ajaxObservable({
-      url,
+      url: "/opf/cart/addresses/delivery",
       method: "POST",
       data: JSON.stringify(address),
     });
   }
 
   /**
-   * Fetches active OPF payment configurations from the backend.
+   * Fetches active OPF payment configurations as a Promise.
    */
   function fetchActiveConfigs() {
-    const url = `${ACC.config.encodedContextPath}/opf-payment/active-configurations`;
-    return fetchWithHandling(url).then((data) => data.value || []);
+    const urlWithContext = `${ACC.config.encodedContextPath}/opf-payment/active-configurations`;
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        url: urlWithContext,
+        method: "GET",
+        contentType: "application/json",
+        success: (data) => resolve(data.value || []),
+        error: (xhr, status, error) =>
+          reject(
+            new Error(
+              `AJAX error! Status: ${xhr.status || status}. Message: ${error}`
+            )
+          ),
+      });
+    });
   }
 
   /**
-   * POST: Create a guest user for the cart.
-   * Returns Observable emitting response info.
+   * Creates a guest user for the cart; returns Observable.
    */
   function createCartGuestUser() {
-    const url = `${ACC.config.contextPath}/opf/cart/guestuser`;
-    return ajaxObservable({ url, method: "POST" });
+    return ajaxObservable({
+      url: "/opf/cart/guestuser",
+      method: "POST",
+    });
   }
 
   /**
-   * PATCH: Update guest user email on the cart.
-   * @param {string} email - updated guest user email.
-   * Returns Observable emitting update confirmation.
+   * Updates guest user email for the cart; returns Observable.
    */
   function updateCartGuestUserEmail(email) {
-    const url = `${ACC.config.contextPath}/opf/cart/guestuser`;
     return ajaxObservable({
-      url,
+      url: "/opf/cart/guestuser",
       method: "PATCH",
       data: JSON.stringify({ email }),
     });
   }
 
   /**
-   * POST: Set / initiate payment information on the cart.
-   * Returns Observable emitting response or empty array.
+   * Sets/initiates payment info on the cart; returns Observable.
    */
   function setPaymentInfo() {
-    const url = `${ACC.config.encodedContextPath}/opf/cart/paymentinfo`;
-    return ajaxObservable({ url, method: "POST" });
+    return ajaxObservable({
+      url: "/opf/cart/paymentinfo",
+      method: "POST",
+    });
+  }
+
+  /**
+   * ApplePay web session request; returns Observable.
+   */
+  function getApplePayWebSession(request) {
+    return ajaxObservable({
+      url: "/opf-payment/applepay-web-session",
+      method: "POST",
+      data: JSON.stringify(request),
+    });
   }
 
   window.OpfApis = {
@@ -137,5 +154,6 @@
     updateCartGuestUserEmail,
     setPaymentInfo,
     fetchActiveConfigs,
+    getApplePayWebSession,
   };
 })(window);

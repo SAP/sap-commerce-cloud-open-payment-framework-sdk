@@ -4,22 +4,29 @@
 package de.hybris.platform.service.impl;
 
 import de.hybris.platform.client.OPFHttpClient;
+import de.hybris.platform.core.model.user.UserModel;
 import de.hybris.platform.cta.request.OPFPaymentCTARequest;
 import de.hybris.platform.data.response.OPFActiveConfigResponse;
 import de.hybris.platform.cta.response.OPFPaymentCTAResponse;
 import de.hybris.platform.opf.data.OPFInitiatePaymentSessionRequestData;
 import de.hybris.platform.opf.data.OPFPaymentSubmitCompleteRequestData;
+import de.hybris.platform.opf.data.request.OPFApplePayRequest;
+import de.hybris.platform.opf.data.response.OPFApplePayResponse;
 import de.hybris.platform.opf.dto.OPFInitiatePaymentSessionResponse;
 import de.hybris.platform.opf.dto.OPFPaymentAttribute;
 import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteResponse;
 import de.hybris.platform.opfservices.client.CCAdapterClientException;
 import de.hybris.platform.opfservices.dtos.http.HttpClientRequestDto;
+import de.hybris.platform.order.CartService;
 import de.hybris.platform.servicelayer.config.ConfigurationService;
 import de.hybris.platform.opf.data.request.OPFPaymentSubmitRequest;
 import de.hybris.platform.opf.data.response.OPFPaymentSubmitResponse;
+import de.hybris.platform.core.model.order.CartModel;
+import de.hybris.platform.core.model.order.payment.SAPGenericPaymentInfoModel;
 
 import de.hybris.platform.opf.dto.OPFPaymentVerifyRequest;
 import de.hybris.platform.opf.dto.OPFPaymentVerifyResponse;
+import de.hybris.platform.servicelayer.model.ModelService;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -55,17 +62,24 @@ public class DefaultOPFAcceleratorServiceTest {
     @Mock
     private OPFPaymentCTARequest opfPaymentCTARequest;
 
+    @Mock
+    private CartService cartService;
+
+    @Mock
+    private ModelService modelService;
+
     String clientId = "mock-client-id";
     String publicKey = "mock-public-key";
-    String baseUrl = "http://mock-base-url";
+    private String HTTPS = "https://";
+    private String BASE_URL = "mock-base-url";
     @Test
     public void getCTAResponseReturnsValidResponseWhenRequestIsSuccessful() {
         OPFPaymentCTAResponse expectedResponse = new OPFPaymentCTAResponse();
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
         doReturn("/mock-cta-url").when(configuration).getString("opf.cta.url", StringUtils.EMPTY);
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenReturn(expectedResponse);
 
         OPFPaymentCTAResponse actualResponse = paymentService.getCTAResponse(opfPaymentCTARequest);
@@ -78,9 +92,9 @@ public class DefaultOPFAcceleratorServiceTest {
     public void getCTAResponseThrowsExceptionWhenHttpClientFails() {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
         doReturn("/mock-cta-url").when(configuration).getString("opf.cta.url", StringUtils.EMPTY);
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenThrow(new RuntimeException("HTTP client error"));
 
         Assertions.assertThrows(RuntimeException.class, () -> paymentService.getCTAResponse(opfPaymentCTARequest));
@@ -96,10 +110,10 @@ public class DefaultOPFAcceleratorServiceTest {
         OPFActiveConfigResponse expectedResponse = new OPFActiveConfigResponse();
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
         doReturn("/mock-active-config-url").when(configuration).getString("opf.active.config.url", StringUtils.EMPTY);
 
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenReturn(expectedResponse);
 
         OPFActiveConfigResponse actualResponse = paymentService.getActiveConfigurations();
@@ -112,10 +126,10 @@ public class DefaultOPFAcceleratorServiceTest {
     public void getActiveConfigurationsThrowsExceptionWhenHttpClientFails() {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
         doReturn("/mock-active-config-url").when(configuration).getString("opf.active.config.url", StringUtils.EMPTY);
 
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenThrow(new RuntimeException("HTTP client error"));
 
         Assertions.assertThrows(RuntimeException.class, () -> paymentService.getActiveConfigurations());
@@ -125,11 +139,11 @@ public class DefaultOPFAcceleratorServiceTest {
     public void getActiveConfigurationsReturnsNullWhenResponseIsEmpty() {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
         doReturn("").when(configuration).getString("opf.active.config.pageSize", StringUtils.EMPTY);
         doReturn("").when(configuration).getString("opf.active.config.pageNumber", StringUtils.EMPTY);
         doReturn("/mock-active-config-url").when(configuration).getString("opf.active.config.url", StringUtils.EMPTY);
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenReturn(null);
 
         OPFActiveConfigResponse actualResponse = paymentService.getActiveConfigurations();
@@ -141,12 +155,12 @@ public class DefaultOPFAcceleratorServiceTest {
     void testGetInitiatePaymentResponse_returnsValidResponse() {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
         doReturn("/mock-payment-session-url").when(configuration).getString("opf.initiate.payment.session.url", StringUtils.EMPTY);
         // Mock security properties
         Mockito.when(opfHttpClient.getSecurityProperties()).thenReturn(Pair.of(clientId, publicKey));
 
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenThrow(new RuntimeException("HTTP client error"));
         OPFInitiatePaymentSessionRequestData requestData = new OPFInitiatePaymentSessionRequestData();
         OPFInitiatePaymentSessionResponse expectedResponse = new OPFInitiatePaymentSessionResponse();
@@ -167,8 +181,8 @@ public class DefaultOPFAcceleratorServiceTest {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
         doReturn("/mock-submit-url").when(configuration).getString("opf.submit.url", StringUtils.EMPTY);
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenReturn(expectedResponse);
         OPFPaymentSubmitResponse actualResponse = paymentService.submitPayment(request, Boolean.FALSE);
 
@@ -183,8 +197,8 @@ public class DefaultOPFAcceleratorServiceTest {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
         doReturn("/mock-submit-url").when(configuration).getString("opf.submit.url", StringUtils.EMPTY);
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
-        Mockito.when(opfHttpClient.httpExchange("http://mock-base-url", httpRequest))
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(HTTPS + BASE_URL, httpRequest))
                 .thenReturn(null);
 
         OPFPaymentSubmitResponse actualResponse = paymentService.submitPayment(request, Boolean.FALSE);
@@ -198,8 +212,8 @@ public class DefaultOPFAcceleratorServiceTest {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
         doReturn("/mock-submit-url").when(configuration).getString("opf.submit.url", StringUtils.EMPTY);
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenThrow(new RuntimeException("HTTP client error"));
 
         Assertions.assertThrows(RuntimeException.class, () -> paymentService.submitPayment(request, Boolean.FALSE));
@@ -212,8 +226,8 @@ public class DefaultOPFAcceleratorServiceTest {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
         doReturn("/mock-verify-url").when(configuration).getString("opf.verify.url", StringUtils.EMPTY);
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenReturn(expectedResponse);
 
         OPFPaymentVerifyResponse actualResponse = paymentService.verifyPayment(request);
@@ -229,8 +243,8 @@ public class DefaultOPFAcceleratorServiceTest {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
         doReturn("/mock-verify-url").when(configuration).getString("opf.verify.url", StringUtils.EMPTY);
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
-        Mockito.when(opfHttpClient.httpExchange("http://mock-base-url", httpRequest))
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(HTTPS + BASE_URL, httpRequest))
                 .thenReturn(null);
 
         OPFPaymentVerifyResponse actualResponse = paymentService.verifyPayment(request);
@@ -244,8 +258,8 @@ public class DefaultOPFAcceleratorServiceTest {
         Configuration configuration = mock(Configuration.class);
         doReturn(configuration).when(configurationService).getConfiguration();
         doReturn("/mock-verify-url").when(configuration).getString("opf.verify.url", StringUtils.EMPTY);
-        doReturn("http://mock-base-url").when(configuration).getString("opf.base.url", StringUtils.EMPTY);
-        Mockito.when(opfHttpClient.httpExchange(Mockito.eq("http://mock-base-url"), Mockito.any(HttpClientRequestDto.class)))
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
                 .thenThrow(new RuntimeException("HTTP client error"));
 
         Assertions.assertThrows(RuntimeException.class, () -> paymentService.verifyPayment(request));
@@ -258,7 +272,7 @@ public class DefaultOPFAcceleratorServiceTest {
         // Setup mock configuration
         Configuration configuration = mock(Configuration.class);
         when(configurationService.getConfiguration()).thenReturn(configuration);
-        when(configuration.getString(eq("opf.base.url"), anyString())).thenReturn(baseUrl);
+        when(configuration.getString(eq("opf.base.url"), anyString())).thenReturn(HTTPS + BASE_URL);
         when(configuration.getString(eq("opf.payment.statuses"), anyString())).thenReturn("COMPLETED");
 
         // Setup request and expected response
@@ -272,7 +286,7 @@ public class DefaultOPFAcceleratorServiceTest {
         expectedResponse.setCustomFields(List.of(customField));
 
         // Mock HTTP response
-        when(opfHttpClient.httpExchange(eq(baseUrl), any(HttpClientRequestDto.class))).thenReturn(expectedResponse);
+        when(opfHttpClient.httpExchange(eq(HTTPS + BASE_URL), any(HttpClientRequestDto.class))).thenReturn(expectedResponse);
 
         // Act
         OPFPaymentSubmitCompleteResponse actualResponse = paymentService.getCompletedPaymentResponse(requestData);
@@ -296,10 +310,10 @@ public class DefaultOPFAcceleratorServiceTest {
         // Mock configuration
         Configuration mockConfig = mock(Configuration.class);
         when(configurationService.getConfiguration()).thenReturn(mockConfig);
-        when(mockConfig.getString(eq("opf.base.url"), anyString())).thenReturn(baseUrl);
+        when(mockConfig.getString(eq("opf.base.url"), anyString())).thenReturn(HTTPS + BASE_URL);
 
         // Mock HTTP exchange
-        when(opfHttpClient.httpExchange(eq(baseUrl), any(HttpClientRequestDto.class))).thenReturn(mockedResponse);
+        when(opfHttpClient.httpExchange(eq(HTTPS + BASE_URL), any(HttpClientRequestDto.class))).thenReturn(mockedResponse);
 
         // Spy validatePaymentStatus to force false
         doReturn(false).when(paymentService).validatePaymentStatus(mockedResponse);
@@ -377,6 +391,97 @@ public class DefaultOPFAcceleratorServiceTest {
 
         Boolean result = paymentService.validatePaymentStatus(response);
         Assertions.assertFalse(result);
+    }
+
+    @Test
+    void setPaymentInfo_createsPaymentInfoWhenNoneExists() {
+        CartModel cartModel = mock(CartModel.class);
+        SAPGenericPaymentInfoModel paymentInfo = mock(SAPGenericPaymentInfoModel.class);
+        when(cartService.getSessionCart()).thenReturn(cartModel);
+        when(cartModel.getPaymentInfo()).thenReturn(null);
+        when(cartModel.getUser()).thenReturn(mock(UserModel.class));
+        when(modelService.create(SAPGenericPaymentInfoModel.class)).thenReturn(paymentInfo);
+
+        paymentService.setPaymentInfo();
+
+        verify(modelService).create(SAPGenericPaymentInfoModel.class);
+        verify(modelService).save(paymentInfo);
+        verify(cartModel).setPaymentInfo(paymentInfo);
+        verify(modelService).save(cartModel);
+        verify(modelService).refresh(cartModel);
+    }
+
+    @Test
+    void setPaymentInfo_doesNothingWhenPaymentInfoExists() {
+        CartModel cartModel = mock(CartModel.class);
+        SAPGenericPaymentInfoModel existingPaymentInfo = mock(SAPGenericPaymentInfoModel.class);
+
+        when(cartService.getSessionCart()).thenReturn(cartModel);
+        when(cartModel.getPaymentInfo()).thenReturn(existingPaymentInfo);
+
+        paymentService.setPaymentInfo();
+
+        verify(modelService, never()).create(SAPGenericPaymentInfoModel.class);
+        verify(modelService, never()).save(any());
+        verify(cartModel, never()).setPaymentInfo(any());
+    }
+
+    @Test
+    void setPaymentInfo_handlesNullCartGracefully() {
+
+        when(cartService.getSessionCart()).thenReturn(null);
+
+        paymentService.setPaymentInfo();
+
+        verify(modelService, never()).create(SAPGenericPaymentInfoModel.class);
+        verify(modelService, never()).save(any());
+    }
+
+    @Test
+    void getApplePayWebSession_validRequest_returnsPopulatedResponse() {
+        OPFApplePayRequest request = new OPFApplePayRequest();
+        OPFApplePayResponse expectedResponse = new OPFApplePayResponse();
+        Configuration configuration = mock(Configuration.class);
+        doReturn(configuration).when(configurationService).getConfiguration();
+        doReturn("/mock-applepay-web-session-url").when(configuration).getString("opf.applepay.web.session.url", StringUtils.EMPTY);
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
+                .thenReturn(expectedResponse);
+
+        OPFApplePayResponse actualResponse = paymentService.getApplePayWebSession(request);
+
+        Assertions.assertNotNull(actualResponse);
+        Assertions.assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    void getApplePayWebSession_nullRequest_throwsException() {
+        Assertions.assertThrows(NullPointerException.class, () -> paymentService.getApplePayWebSession(null));
+    }
+
+    @Test
+    void getApplePayWebSession_httpClientReturnsNull_returnsNullResponse() {
+        OPFApplePayRequest request = new OPFApplePayRequest();
+        Configuration configuration = mock(Configuration.class);
+        doReturn(configuration).when(configurationService).getConfiguration();
+        doReturn("/mock-applepay-web-session-url").when(configuration).getString("opf.applepay.web.session.url", StringUtils.EMPTY);
+        doReturn(HTTPS + BASE_URL).when(configuration).getString("opf.base.url", StringUtils.EMPTY);
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL), Mockito.any(HttpClientRequestDto.class)))
+                .thenReturn(null);
+
+        OPFApplePayResponse actualResponse = paymentService.getApplePayWebSession(request);
+
+        Assertions.assertNull(actualResponse);
+    }
+
+    @Test
+    void getApplePayWebSession_httpClientThrowsException_propagatesException() {
+        OPFApplePayRequest request = new OPFApplePayRequest();
+
+        Mockito.when(opfHttpClient.httpExchange(Mockito.eq(HTTPS + BASE_URL ), Mockito.any(HttpClientRequestDto.class)))
+                .thenThrow(new RuntimeException("HTTP client error"));
+
+        Assertions.assertThrows(RuntimeException.class, () -> paymentService.getApplePayWebSession(request));
     }
 
 }

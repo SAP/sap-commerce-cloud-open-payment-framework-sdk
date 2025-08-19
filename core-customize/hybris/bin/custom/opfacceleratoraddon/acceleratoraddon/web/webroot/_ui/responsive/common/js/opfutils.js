@@ -76,15 +76,15 @@
    */
   function convertAddress(address) {
     let convertedAddress = {
-      firstName: "[FIELD_NOT_SET]",
-      lastName: "[FIELD_NOT_SET]",
+      firstName: AppConstants.DEFAULT_FIELD_VALUE,
+      lastName: AppConstants.DEFAULT_FIELD_VALUE,
       country: {
         isocode: address?.countryCode,
       },
       town: address?.locality,
       district: address?.administrativeArea,
       postalCode: address?.postalCode,
-      line1: address?.address1 || "[FIELD_NOT_SET]",
+      line1: address?.address1 || AppConstants.DEFAULT_FIELD_VALUE,
       line2: `${address?.address2 || ""} ${address?.address3 || ""}`.trim(),
     };
 
@@ -124,31 +124,44 @@
    * @param {object} config
    * @returns {Array}
    */
-  function getEnabledQuickBuyWallet(config) {
+  function getEnabledApplePayConfig(config) {
     if (!config || !Array.isArray(config.digitalWalletQuickBuy)) {
       return [];
     }
 
-    return config.digitalWalletQuickBuy.filter(
-      (wallet) => wallet.enabled === true
+    return (
+      config.digitalWalletQuickBuy.find(
+        (wallet) => wallet.provider === "APPLE_PAY" && wallet.enabled === true
+      ) || null
     );
   }
 
-  /*
-  function generateOpt() {
-    setCartData();
-    const jsonData = {
-      cartCode: cartData.code,
-      cartGuid: cartData.guid,
-      creationTime: Date.now().toString(),
+  /**
+   * Converts Apple Pay address to OPF format.
+   * Fills missing fields with placeholders if partial is true.
+   * @param {object} addr - Apple Pay address object
+   * @param {boolean} partial - whether to fill missing fields with placeholders
+   * @returns {object} converted address in OPF format
+   */
+  function convertAppleToOpfAddress(addr, partial = false) {
+    const ADDRESS_FIELD_PLACEHOLDER = AppConstants.DEFAULT_FIELD_VALUE;
+    return {
+      firstName: partial ? ADDRESS_FIELD_PLACEHOLDER : addr?.givenName,
+      lastName: partial ? ADDRESS_FIELD_PLACEHOLDER : addr?.familyName,
+      line1: partial ? ADDRESS_FIELD_PLACEHOLDER : addr?.addressLines?.[0],
+      line2: addr?.addressLines?.[1],
+      email: addr?.emailAddress,
+      town: addr?.locality,
+      district: addr?.administrativeArea,
+      postalCode: addr?.postalCode,
+      phone: addr?.phoneNumber,
+      country: {
+        isocode: addr?.countryCode,
+        name: addr?.country,
+      },
+      defaultAddress: false,
     };
-
-    const jsonString = JSON.stringify(jsonData);
-    const otpKey = btoa(jsonString);
-
-    return otpKey;
   }
-  */
 
   // Aggregate and expose all functions as OpfUtils object on window
   window.OpfUtils = {
@@ -159,7 +172,8 @@
     convertAddress,
     getFirstAndLastName,
     removeLeadingSlashes,
-    getEnabledQuickBuyWallet,
+    getEnabledApplePayConfig,
+    convertAppleToOpfAddress,
     // generateOpt,
   };
 })(window);

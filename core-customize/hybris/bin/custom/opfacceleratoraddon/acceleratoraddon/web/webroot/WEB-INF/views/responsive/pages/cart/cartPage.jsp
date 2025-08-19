@@ -7,14 +7,6 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="ycommerce" uri="http://hybris.com/tld/ycommercetags" %>
 
-<meta name="locale" content="${currentLocale.language}" />
-<meta name="currency" content="${currentCurrency.isocode}" />
-
-<script type="text/javascript">
-    ACC.config.locale = '${currentLanguage.isocode}';
-    ACC.config.currency = '${currentCurrency.isocode}';
-</script>
-
 <spring:htmlEscape defaultHtmlEscape="true" />
 
 <template:page pageTitle="${pageTitle}">
@@ -40,12 +32,6 @@
 	</div>
 
 	<div>
-	    <div>
-            <cms:pageSlot position="OPFCTAScriptSlot" var="opfCtaSlot">
-                <cms:component component="${opfCtaSlot}" />
-            </cms:pageSlot>
-	    </div>
-
 		<div>
             <cms:pageSlot position="TopContent" var="feature">
                 <cms:component component="${feature}" element="div" class="yComponentWrapper"/>
@@ -57,7 +43,7 @@
                 <cms:component component="${feature}" element="div" class="yComponentWrapper"/>
            </cms:pageSlot>
         </c:if>
-		
+
 		 <c:if test="${not empty cartData.rootGroups}">
             <cms:pageSlot position="CenterRightContentSlot" var="feature">
                 <cms:component component="${feature}" element="div" class="yComponentWrapper"/>
@@ -66,7 +52,6 @@
                 <cms:component component="${feature}" element="div" class="yComponentWrapper"/>
             </cms:pageSlot>
 		</c:if>
-				
 		<c:if test="${empty cartData.rootGroups}">
             <cms:pageSlot position="EmptyCartMiddleContent" var="feature">
                 <cms:component component="${feature}" element="div" class="yComponentWrapper content__empty"/>

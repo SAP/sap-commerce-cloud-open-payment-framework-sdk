@@ -9,16 +9,16 @@
  * license agreement you entered into with SAP.
  */
 
-// GooglePayDefaults - Default configuration objects for Google Pay and Apple Pay integrations
+// QuickBuyDefaults - Default configuration objects for Google Pay and Apple Pay integrations
 (function (window) {
-  // Ensure global GooglePayDefaults object exists (without overwriting if already defined)
-  const GooglePayDefaults = window.GooglePayDefaults || {};
+  // Ensure global QuickBuyDefaults object exists (without overwriting if already defined)
+  const QuickBuyDefaults = window.QuickBuyDefaults || {};
 
   /**
    * Initial Google Pay Payment Request object.
    * These settings configure the Google Pay API version, merchant info, and payment callbacks.
    */
-  GooglePayDefaults.initialGooglePaymentRequest = {
+  QuickBuyDefaults.initialGooglePaymentRequest = {
     apiVersion: 2,
     apiVersionMinor: 0,
     callbackIntents: [
@@ -41,7 +41,7 @@
    * Default card payment parameters for Google Pay.
    * Specifies accepted card authorization methods and networks, plus billing address requirements.
    */
-  GooglePayDefaults.defaultGooglePayCardParameters = {
+  QuickBuyDefaults.defaultGooglePayCardParameters = {
     allowedAuthMethods: ["PAN_ONLY", "CRYPTOGRAM_3DS"],
     allowedCardNetworks: [
       "AMEX",
@@ -61,7 +61,7 @@
    * Initial transaction details used in Google Pay flow.
    * Contains product info, quantity, delivery type, address, and payment total.
    */
-  GooglePayDefaults.initialTransactionDetails = {
+  QuickBuyDefaults.initialTransactionDetails = {
     context: "PRODUCT",
     product: undefined,
     cart: undefined,
@@ -82,7 +82,7 @@
    * Initial transaction details tailored for Apple Pay integration.
    * Uses constants from your `OpfQuickBuy` enums where applicable.
    */
-  GooglePayDefaults.applePayInitialTransactionDetails = {
+  QuickBuyDefaults.applePayInitialTransactionDetails = {
     context: OpfQuickBuyLocation.PRODUCT,
     product: undefined,
     cart: undefined,
@@ -103,7 +103,7 @@
    * Google Pay initial transaction info.
    * Used by Google Pay API to specify total pricing details.
    */
-  GooglePayDefaults.initialTransactionInfo = {
+  QuickBuyDefaults.initialTransactionInfo = {
     totalPrice: "0.00",
     totalPriceStatus: "ESTIMATED",
     currencyCode: "USD",
@@ -113,7 +113,7 @@
    * Default error structure for OPF payment errors.
    * Can be extended or replaced with localization strings.
    */
-  GooglePayDefaults.opfDefaultPaymentError = {
+  QuickBuyDefaults.opfDefaultPaymentError = {
     statusText: "Payment Error",
     message: "opfPayment.errors.proceedPayment", // Presumably a key for localization
     status: -1, // Custom status code for errors
@@ -124,7 +124,7 @@
    * Apple Pay default card parameters.
    * Defines capabilities and supported card networks, plus required contact fields.
    */
-  GooglePayDefaults.defaultApplePayCardParameters = {
+  QuickBuyDefaults.defaultApplePayCardParameters = {
     shippingMethods: [],
     merchantCapabilities: ["supports3DS"], // ApplePay merchant capabilities, usually includes 3D Secure
     supportedNetworks: ["visa", "masterCard", "amex", "discover"],
@@ -133,7 +133,7 @@
   };
 
   // Assign back to global window if it didn't exist to begin with
-  if (!window.GooglePayDefaults) {
-    window.GooglePayDefaults = GooglePayDefaults;
+  if (!window.QuickBuyDefaults) {
+    window.QuickBuyDefaults = QuickBuyDefaults;
   }
 })(window);
