@@ -22,7 +22,7 @@ Development of custom addon(s) on the SAP Commerce Accelerator storefront that c
    
 6. For CTA script rendering(for example Karlna) which is optional to be shown on cartPage and PDP page ,add opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/cart/opfCartCTAScript.tag file in cartPage.jsp of the mystorefront extension and add opfacceleratoraddon/acceleratoraddon/web/webroot/WEB-INF/tags/responsive/product/opfProductCTAScript.tag in productDetailsPanel.jsp
 7. For CTA scripting on Order confirmation page refer to https://help.sap.com/docs/SAP_COMMERCE_COMPOSABLE_STOREFRONT/962112809f9a48f9b36aa05b208b3731/a5202788df55400eafad3ebe7a5a7895.html?state=DRAFT&locale=en-US#loio6b869b96ce8b4571a697b8ff9940402c
-8. GooglePay integration add opfGooglePay.tag in checkoutDisplay.jsp
+8. For QuickBuy(GooglePay) integration add opfQuickBuy.tag in checkoutDisplay.jsp
 9. To integrate OPF order process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/f77e5d4c4a984d6c8e3cc7882bf79194.html?locale=en-US,depending upon the order integrations used(SAP OMS or Asynchronous order management ), follow the steps provided in the link.
 10. To integrate OPF return process refer to the link https://help.sap.com/docs/OPEN_PAYMENT_FRAMEWORK/3580ff1b17144b8780c055bbb7c2bed3/cd2a9b34b8d54336be9737c220ca5095.html?locale=en-US , depending upon the order integration used(SAP   OMS or Asynchronous order management), follow the specific steps provide in the link.
 11. Customer has to provide implementation for taxes and shipping taxes prices depending upon the requirements .Refer to below class for the customization
