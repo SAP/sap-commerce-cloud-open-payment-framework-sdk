@@ -10,7 +10,7 @@ Development of custom addon(s) on the SAP Commerce Accelerator storefront that c
  
 Depending on the accelerator storefront scenario you are using (B2C or B2B), follow the corresponding steps
  
-Firstly clone this repository and copy the contents under ``/samples/accelerator-storefront/core-customize`` into your projects core-customize folder. Below extensions shall be available
+Firstly clone this repository into your projects core-customize folder. Below extensions shall be available
  
     1. opfacceleratoraddon - B2C Addon
     2. opfb2bacceleratoraddon - B2B Addon
