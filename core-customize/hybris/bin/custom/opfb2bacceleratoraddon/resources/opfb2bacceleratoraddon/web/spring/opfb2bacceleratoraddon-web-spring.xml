@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/util
+           http://www.springframework.org/schema/util/spring-util.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd">
+           
+    <context:annotation-config/> 
+
+
+	<!-- Expose /acceleratoraddon/web/webroot/WEB-INF/messages/base.js.properties  resource bundle as javascript variables -->
+	<bean id="defaultOpfb2bacceleratoraddonJavaScriptMessageResourceAccessor" parent="abstractJavaScriptMessageResourceAccessor">
+		<property name="addOnName" value="opfb2bacceleratoraddon"/>
+	</bean>
+
+	<bean id="defaultOpfb2bacceleratoraddonBeforeViewJsPropsHandlerAdaptee" parent="abstractBeforeViewJsPropsHandlerAdaptee" class="de.hybris.platform.addonsupport.interceptors.ExportJsPropertiesBeforeViewHandler">
+		<property name="messageSource" ref="defaultOpfb2bacceleratoraddonJavaScriptMessageResourceAccessor"/>
+	</bean>
+
+	<bean id="getOpfb2bacceleratoraddonBeforeViewHandler" parent="beforeViewHandlerAdapter">
+		<property name="adaptee">
+			<ref bean="defaultOpfb2bacceleratoraddonBeforeViewJsPropsHandlerAdaptee"/>
+		</property>
+	</bean>
+	<bean id="Opfb2bacceleratoraddonBeforeViewHandlerListMergeDirective" depends-on="beforeViewHandlersList" parent="listMergeDirective">
+		<property name="add" ref="getOpfb2bacceleratoraddonBeforeViewHandler"/>
+	</bean>
+    <bean id="opfB2BAcceleratorAddonBeforeViewHandler" class="de.hybris.platform.opfb2bacceleratoraddon.handler.OPFB2BAcceleratorAddonBeforeViewHandler">
+        <property name="viewMap" ref="opfB2BAcceleratorAddonViewMap" />
+    </bean>
+
+    <bean depends-on="beforeViewHandlersList" parent="listMergeDirective">
+        <property name="add" ref="opfB2BAcceleratorAddonBeforeViewHandler" />
+    </bean>
+
+    <util:map id="opfB2BAcceleratorAddonViewMap" key-type="java.lang.String" value-type="java.lang.Map">
+        <entry key="pages/checkout/multi/opfPaymentPage" value-ref="opfPaymentPage"/>
+        <entry key="pages/checkout/multi/opfVerifyPaymentPage" value-ref="opfVerifyPaymentPage"/>
+        <entry key="pages/checkout/multi/choosePaymentTypePage" value-ref="choosePaymentTypePage"/>
+    </util:map>
+
+    <util:map id="choosePaymentTypePage" key-type="java.lang.String" value-type="java.lang.String">
+        <entry key="viewName" value="/pages/checkout/multi/choosePaymentTypePage" />
+    </util:map>
+    <util:map id="opfPaymentPage" key-type="java.lang.String" value-type="java.lang.String">
+        <entry key="viewName" value="/pages/checkout/multi/opfPaymentPage" />
+    </util:map>
+    <util:map id="opfVerifyPaymentPage" key-type="java.lang.String" value-type="java.lang.String">
+        <entry key="viewName" value="/pages/checkout/multi/opfVerifyPaymentPage" />
+    </util:map>
+
+    <alias name="defaultOPFOrderCartValidator" alias="opfOrderCartValidator"/>
+    <bean id="defaultOPFOrderCartValidator" class="de.hybris.platform.opfb2bacceleratoraddon.validation.OPFOrderCartValidator">
+        <constructor-arg ref="messageSource"/>
+        <constructor-arg ref="i18NService"/>
+    </bean>
+
+    <alias name="defaultOPFAddressValidator" alias="opfAddressValidator"/>
+    <bean id="defaultOPFAddressValidator" class="de.hybris.platform.opfb2bacceleratoraddon.validation.OPFAddressValidator">
+        <constructor-arg ref="messageSource"/>
+        <constructor-arg ref="i18NService"/>
+    </bean>
+</beans>

@@ -3,6 +3,7 @@
  */
 package de.hybris.platform.facade;
 
+import de.hybris.platform.commercefacades.order.data.CartData;
 import de.hybris.platform.commercefacades.user.data.AddressData;
 
 /**
@@ -31,4 +32,19 @@ public interface OPFCheckoutPaymentFacade {
      * @return Boolean flag true/false
      */
     boolean isGuestUser();
+
+   /**
+     * Sets the payment ID on the cart.
+     *
+     * @param paymentID
+     *         the payment ID to be set on the cart
+     */
+    void setPaymentIDOnCart(String paymentID);
+
+    /**
+     * Retrieves the cart data for the current checkout session.
+     *
+     * @return the current checkout cart data
+     */
+    CartData getOPFCheckoutCart();
 }

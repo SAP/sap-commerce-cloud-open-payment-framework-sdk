@@ -1,0 +1,23 @@
+.btn-place-order {
+    margin-top: 10px;
+}
+.opf-payment-step {
+    padding: 30px 20px 15px;
+    border: 1px solid #cccccc;
+    border-top: 0;
+    padding-top: 0;
+    padding-bottom: 10px;
+}
+.opf-checkout-shipping {
+    padding: 30px 20px 15px;
+    border: 1px solid #cccccc;
+    padding-bottom: 10px;
+}
+.opf-select-payment{
+    padding-bottom: 10px;
+    font-weight: bold;
+ }
+ .opf-billing-headline{
+    font-size: 18px;
+    padding-top: 10px;
+ }

@@ -11,6 +11,8 @@ import com.opf.dto.submit.OPFPaymentSubmitRequestDTO;
 import com.opf.dto.submit.OPFPaymentSubmitResponseDTO;
 import com.opf.dto.verify.OPFPaymentVerifyRequestDTO;
 import com.opf.dto.verify.OPFPaymentVerifyResponseDTO;
+import com.opf.order.data.OPFB2BPaymentTypeData;
+import de.hybris.platform.b2bacceleratorfacades.order.data.B2BPaymentTypeData;
 import de.hybris.platform.commercefacades.user.data.AddressData;
 import de.hybris.platform.opf.data.OPFInitiatePaymentData;
 import de.hybris.platform.opf.data.OPFPaymentSubmitCompleteResponseData;
@@ -19,6 +21,8 @@ import de.hybris.platform.opf.dto.OPFInitiatePaymentSessionRequest;
 import de.hybris.platform.opf.dto.OPFPaymentVerifyResponse;
 import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteRequest;
 import de.hybris.platform.opf.dto.user.AddressWsDTO;
+
+import java.util.List;
 
 /**
  * Open Payment Framework Accelerator SDK Facade
@@ -111,4 +115,25 @@ public interface OPFAcceleratorFacade {
      * @return an {@link AddressData} object populated with values from the given {@code AddressWsDTO}.
      */
     AddressData mapAddressWsDTOToAddressData(AddressWsDTO source);
+    /**
+     * Retrieves a list of active B2B payment configurations.
+     * This method is typically used to fetch payment types that are available
+     * and active for B2B transactions in the current context.
+     *
+     * @return a list of {@link B2BPaymentTypeData} objects representing the active B2B payment configurations.
+     */
+   List<OPFB2BPaymentTypeData> getB2BActiveConfigurations();
+
+    /**
+     * Sets payment information on the cart for an account.
+     * This method is used to associate payment details with the cart
+     * in the context of an account-based transaction.
+     */
+    void setPaymentInfoOnCartForAccount();
+
+    /**
+     * Clears the SAP Payment Option ID from the current session or cart.
+     * This method is useful for resetting or removing any previously set payment option identifiers.
+     */
+    void  clearSapPaymentOptionId();
 }

@@ -3,6 +3,7 @@
  */
 package de.hybris.platform.facade.impl;
 
+import de.hybris.platform.commercefacades.order.data.CartData;
 import de.hybris.platform.commercefacades.order.impl.DefaultCheckoutPaymentFacade;
 import de.hybris.platform.commercefacades.user.data.AddressData;
 import de.hybris.platform.commerceservices.enums.CustomerType;
@@ -83,4 +84,28 @@ public class DefaultOPFCheckoutPaymentFacade extends DefaultCheckoutPaymentFacad
         ItemModel user = cartModel.getUser();
         return (user instanceof CustomerModel customer) && CustomerType.GUEST.equals(customer.getType());
     }
+
+    @Override
+    public void setPaymentIDOnCart(String paymentID) {
+        CartModel cartModel = cartService.getSessionCart();
+        if (cartModel != null) {
+            cartModel.setSapPaymentOptionId(paymentID);
+
+            getModelService().save(cartModel);
+            getModelService().refresh(cartModel);
+        }
+    }
+
+    @Override
+    public CartData getOPFCheckoutCart() {
+        CartModel cartModel = cartService.getSessionCart();
+        CartData cartData=super.getCheckoutCart();
+        if(cartData!=null){
+          cartData.setOpfB2BPaymentId(cartModel.getSapPaymentOptionId());
+        }
+        return cartData;
+    }
+
+
+
 }
