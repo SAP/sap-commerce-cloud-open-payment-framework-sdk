@@ -103,6 +103,8 @@
                          ref="opfPaymentSubmitCompleteResponseConverter"/>
         <constructor-arg name="opfApplePayRequestConverter"
                             ref="opfApplePayRequestConverter"/>
+        <constructor-arg name="opfB2BAcceleratorActiveConfigResponseConverter"
+                         ref="opfB2BAcceleratorActiveConfigResponseConverter"/>
     </bean>
 
     <alias name="opfAcceleratorPaymentCTARequestPopulator" alias="opfAcceleratorCTARequestPopulator"/>
@@ -117,6 +119,12 @@
            alias="opfAcceleratorPaymentActiveConfigResponsePopulator"/>
     <bean id="opfAcceleratorPaymentActiveConfigResponsePopulator"
           class="de.hybris.platform.populator.OPFAcceleratorPaymentActiveConfigResponsePopulator"/>
+
+
+    <alias name="opfB2BAcceleratorActiveConfigResponsePopulator"
+           alias="opfB2BAcceleratorActiveConfigResponsePopulator"/>
+    <bean id="opfB2BAcceleratorActiveConfigResponsePopulator"
+          class="de.hybris.platform.populator.OPFB2BAcceleratorPaymentActiveConfigResponsePopulator"/>
 
     <alias name="opfAcceleratorPaymentSubmitRequestPopulator" alias="opfAcceleratorPaymentSubmitRequestPopulator"/>
     <bean id="opfAcceleratorPaymentSubmitRequestPopulator"
@@ -168,7 +176,15 @@
             </list>
         </property>
     </bean>
-
+    <alias name="defaultOPFB2BActiveConfigResponseConverter" alias="opfB2BAcceleratorActiveConfigResponseConverter"/>
+    <bean id="defaultOPFB2BActiveConfigResponseConverter" parent="abstractPopulatingConverter">
+        <property name="targetClass" value="com.opf.order.data.OPFB2BPaymentTypeData"/>
+        <property name="populators">
+            <list>
+                <ref bean="opfB2BAcceleratorActiveConfigResponsePopulator"/>
+            </list>
+        </property>
+    </bean>
     <alias name="defaultOPFSubmitRequestConverter" alias="opfAcceleratorSubmitRequestConverter"/>
     <bean id="defaultOPFSubmitRequestConverter" parent="abstractPopulatingConverter">
         <property name="targetClass" value="com.opf.dto.submit.OPFPaymentSubmitRequestDTO"/>

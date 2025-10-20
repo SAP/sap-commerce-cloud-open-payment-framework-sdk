@@ -708,4 +708,106 @@
 		<property name="displayName" type="String"/>
 		<property name="signature" type="String"/>
 	</bean>
+    <bean class="com.opf.dto.cta.CTARequestDTO">
+        <property name="paymentAccountIds" type="java.util.List&lt;String>"/>
+        <property name="scriptLocations" type="java.util.List&lt;String>"/>
+        <property name="ctaProductItems" type="java.util.List&lt;com.opf.dto.cta.CTAProductItemsDTO>"/>
+        <property name="additionalData" type="java.util.List&lt;com.opf.dto.cta.CTAAttributesDTO>"/>
+    </bean>
+    <bean class="com.opf.dto.cta.CTAProductItemsDTO">
+        <property name="productId" type="String"/>
+        <property name="quantity" type="java.lang.Long"/>
+    </bean>
+
+
+    <bean class="com.opf.dto.cta.CTAResponseDTO">
+        <property name="value" type="java.util.List&lt;com.opf.dto.cta.CTAValueDTO>"/>
+    </bean>
+    <bean class="com.opf.dto.cta.CTAValueDTO">
+        <property name="paymentAccountId" type="String"/>
+        <property name="dynamicScript" type="com.opf.dto.cta.CTADynamicScriptDTO"/>
+    </bean>
+    <bean class="com.opf.dto.cta.CTAAttributesDTO">
+        <property name="key" type="String"/>
+        <property name="value" type="String"/>
+    </bean>
+    <bean class="com.opf.dto.cta.CTAUrlDataDTO">
+        <property name="url" type="String"/>
+        <property name="sri" type="String"/>
+        <property name="attributes" type="java.util.List&lt;com.opf.dto.cta.CTAAttributesDTO>"/>
+    </bean>
+
+    <bean class="com.opf.dto.cta.CTADynamicScriptDTO">
+        <property name="html" type="String"/>
+        <property name="cssUrls" type="java.util.List&lt;com.opf.dto.cta.CTAUrlDataDTO>"/>
+        <property name="jsUrls" type="java.util.List&lt;com.opf.dto.cta.CTAUrlDataDTO>"/>
+    </bean>
+    <bean class="com.opf.dto.cta.OPFPageableDTO">
+        <property name="number" type="Integer"/>
+        <property name="size" type="Integer"/>
+        <property name="totalElements" type="Integer"/>
+        <property name="totalPages" type="Integer"/>
+    </bean>
+    <bean class="com.opf.dto.cta.OPFActiveConfigValueDTO">
+        <property name="id" type="Integer"/>
+        <property name="providerType" type="String"/>
+        <property name="paymentType" type="String"/>
+        <property name="merchantId" type="String"/>
+        <property name="displayName" type="String"/>
+        <property name="digitalWalletQuickBuy"
+                  type="java.util.List&lt;com.opf.dto.cta.OPFActiveConfigDigitalWalletDTO>"/>
+        <property name="logoUrl" type="String"/>
+    </bean>
+    <bean class="com.opf.dto.cta.OPFActiveConfigDigitalWalletDTO">
+        <property name="provider" type="String"/>
+        <property name="enabled" type="boolean"/>
+        <property name="merchantId" type="String"/>
+        <property name="countryCode" type="String"/>
+        <property name="googlePayGateway" type="String"/>
+
+    </bean>
+    <bean class="com.opf.dto.cta.OPFActiveConfigDTO">
+        <property name="value" type="java.util.List&lt;com.opf.dto.cta.OPFActiveConfigValueDTO>"/>
+        <property name="pageable" type="com.opf.dto.cta.OPFPageableDTO"/>
+    </bean>
+
+    <bean class="com.opf.dto.submit.OPFPaymentSubmitRequestDTO">
+        <property name="additionalData" type="java.util.List&lt;de.hybris.platform.opf.data.request.OPFAdditionalData>"/>
+        <property name="browserInfo" type="de.hybris.platform.opf.dto.OPFPaymentBrowserInfo"/>
+        <property name="channel" type="String"/>
+        <property name="encryptedToken" type="String"/>
+        <property name="paymentMethod" type="String"/>
+    </bean>
+
+    <bean class="com.opf.dto.submit.OPFPaymentSubmitResponseDTO">
+        <property name="cartId" type="String"/>
+        <property name="status" type="String"/>
+        <property name="authorizedAmount" type="Double"/>
+        <property name="customFields" type="java.util.List&lt;de.hybris.platform.opf.data.request.OPFAdditionalData>"/>
+        <property name="paymentSessionId" type="String"/>
+    </bean>
+    <bean class="com.opf.dto.verify.OPFPaymentVerifyRequestDTO">
+        <property name="responseMap" type="java.util.List&lt;de.hybris.platform.opf.dto.OPFPaymentAttribute>"/>
+    </bean>
+    <bean class="com.opf.dto.verify.OPFPaymentVerifyResponseDTO">
+        <property name="result" type="String"/>
+    </bean>
+    <bean class="com.opf.dto.request.OPFApplePayRequestDTO">
+        <property name="validationUrl" type="String"/>
+        <property name="initiative" type="String"/>
+        <property name="initiativeContext" type="String"/>
+    </bean>
+
+    <bean class="de.hybris.platform.commercefacades.order.data.CartData" extends="de.hybris.platform.commercefacades.order.data.AbstractOrderData">
+        <property name="opfB2BPaymentId" type="String"/>
+    </bean>
+
+    <bean class="com.opf.order.data.OPFB2BPaymentTypeData">
+        <property name="id" type="Integer"/>
+        <property name="code" type="String"/>
+        <property name="merchantId" type="String"/>
+        <property name="displayName" type="String"/>
+        <property name="logoUrl" type="String"/>
+    </bean>
+
 	</beans>

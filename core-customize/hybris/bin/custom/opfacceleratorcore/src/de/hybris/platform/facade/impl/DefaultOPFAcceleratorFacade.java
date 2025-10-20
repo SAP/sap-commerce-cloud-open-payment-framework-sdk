@@ -10,6 +10,7 @@ import com.opf.dto.request.OPFApplePayRequestDTO;
 import com.opf.dto.submit.OPFPaymentSubmitRequestDTO;
 import com.opf.dto.submit.OPFPaymentSubmitResponseDTO;
 import com.opf.dto.verify.OPFPaymentVerifyRequestDTO;
+import com.opf.order.data.OPFB2BPaymentTypeData;
 import de.hybris.platform.commercefacades.user.data.AddressData;
 import de.hybris.platform.commercefacades.user.data.CountryData;
 import de.hybris.platform.commercefacades.user.data.RegionData;
@@ -17,6 +18,7 @@ import de.hybris.platform.commercefacades.user.data.RegionData;
 import de.hybris.platform.cta.request.OPFPaymentCTARequest;
 import de.hybris.platform.cta.response.OPFPaymentCTAResponse;
 import de.hybris.platform.data.response.OPFActiveConfigResponse;
+import de.hybris.platform.data.response.OPFActiveConfigValue;
 import de.hybris.platform.facade.OPFAcceleratorFacade;
 
 import de.hybris.platform.opf.data.OPFInitiatePaymentData;
@@ -41,11 +43,14 @@ import de.hybris.platform.opf.dto.user.CountryWsDTO;
 import de.hybris.platform.service.OPFAcceleratorService;
 import de.hybris.platform.servicelayer.dto.converter.Converter;
 import de.hybris.platform.util.OPFAcceleratorCoreUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -66,7 +71,7 @@ public class DefaultOPFAcceleratorFacade implements OPFAcceleratorFacade {
     private Converter<OPFPaymentSubmitCompleteRequest, OPFPaymentSubmitCompleteRequestData> opfPaymentSubmitCompleteRequestConverter;
     private Converter<OPFPaymentSubmitCompleteResponse, OPFPaymentSubmitCompleteResponseData> opfPaymentSubmitCompleteResponseConverter;
     private Converter<OPFApplePayRequestDTO, OPFApplePayRequest> opfApplePayRequestConverter;
-
+    private Converter<OPFActiveConfigValue, OPFB2BPaymentTypeData> opfB2BAcceleratorActiveConfigResponseConverter;
     /**
      * Constructor for DefaultOPFAcceleratorFacade
      *
@@ -94,6 +99,8 @@ public class DefaultOPFAcceleratorFacade implements OPFAcceleratorFacade {
      *       submit complete response converter
      * @param opfApplePayRequestConverter
      *       apple pay request converter
+     * @param opfB2BAcceleratorActiveConfigResponseConverter
+     *      B2B active config response converter
      */
     public DefaultOPFAcceleratorFacade(OPFAcceleratorService opfAcceleratorService,
             Converter<CTARequestDTO, OPFPaymentCTARequest> opfAcceleratorCTARequestConverter,
@@ -106,7 +113,8 @@ public class DefaultOPFAcceleratorFacade implements OPFAcceleratorFacade {
             Converter<OPFPaymentVerifyRequestDTO, OPFPaymentVerifyRequest> opfAcceleratorVerifyRequestConverter,
             Converter<OPFPaymentSubmitCompleteRequest, OPFPaymentSubmitCompleteRequestData> opfPaymentSubmitCompleteRequestConverter,
             Converter<OPFPaymentSubmitCompleteResponse, OPFPaymentSubmitCompleteResponseData> opfPaymentSubmitCompleteResponseConverter,
-            Converter<OPFApplePayRequestDTO, OPFApplePayRequest> opfApplePayRequestConverter) {
+            Converter<OPFApplePayRequestDTO, OPFApplePayRequest> opfApplePayRequestConverter,
+            Converter<OPFActiveConfigValue, OPFB2BPaymentTypeData> opfB2BAcceleratorActiveConfigResponseConverter) {
         this.opfAcceleratorService = opfAcceleratorService;
         this.opfAcceleratorCTARequestConverter = opfAcceleratorCTARequestConverter;
         this.opfAcceleratorCTAResponseConverter = opfAcceleratorCTAResponseConverter;
@@ -119,6 +127,7 @@ public class DefaultOPFAcceleratorFacade implements OPFAcceleratorFacade {
         this.opfPaymentSubmitCompleteRequestConverter = opfPaymentSubmitCompleteRequestConverter;
         this.opfPaymentSubmitCompleteResponseConverter = opfPaymentSubmitCompleteResponseConverter;
         this.opfApplePayRequestConverter=opfApplePayRequestConverter;
+        this.opfB2BAcceleratorActiveConfigResponseConverter=opfB2BAcceleratorActiveConfigResponseConverter;
     }
 
     /**
@@ -336,5 +345,29 @@ public class DefaultOPFAcceleratorFacade implements OPFAcceleratorFacade {
         return target;
     }
 
+    @Override
+    public List<OPFB2BPaymentTypeData> getB2BActiveConfigurations() {
+        List<OPFB2BPaymentTypeData> b2BPaymentTypeDataList = new ArrayList<>();
+        OPFActiveConfigResponse activeConfigResponse = opfAcceleratorService.getActiveConfigurations();
+        List<OPFActiveConfigValue> activeConfigList=activeConfigResponse.getValue();
+        if(!CollectionUtils.isEmpty(activeConfigList)){
+            b2BPaymentTypeDataList=  opfB2BAcceleratorActiveConfigResponseConverter.convertAll(activeConfigList);
+        }
+        return b2BPaymentTypeDataList;
+    }
+
+    @Override
+    public void setPaymentInfoOnCartForAccount() {
+        opfAcceleratorService.setPaymentInfoForAccount();
+    }
+
+    /**
+     * Clears the SAP Payment Option ID from the current session or cart.
+     * This method is useful for resetting or removing any previously set payment option identifiers.
+     */
+    @Override
+    public void  clearSapPaymentOptionId() {
+        opfAcceleratorService.clearSapPaymentOptionId();
+    }
 
 }

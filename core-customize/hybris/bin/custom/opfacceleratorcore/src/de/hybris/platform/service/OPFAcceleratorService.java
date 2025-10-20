@@ -98,4 +98,16 @@ public interface OPFAcceleratorService {
      * @see OPFApplePayResponse
      */
     OPFApplePayResponse getApplePayWebSession(OPFApplePayRequest request) ;
+
+    /**
+     * Sets payment information for an account.
+     * This method is used to associate payment details with an account.
+     */
+    void setPaymentInfoForAccount();
+
+    /**
+     * Clears the SAP payment option ID from the current session or context.
+     * This method is used to remove any previously set payment option identifier.
+     */
+    void clearSapPaymentOptionId();
 }

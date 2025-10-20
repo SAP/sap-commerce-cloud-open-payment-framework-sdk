@@ -1,0 +1,17 @@
+# -----------------------------------------------------------------------
+# Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved.
+# -----------------------------------------------------------------------
+# you can put key/value pairs here.
+# Use Config.getParameter(..) to retrieve the values during runtime.
+
+opfb2bacceleratoraddon.key=value
+
+# Specifies the location of the spring context file added automatically to the global platform application context.
+opfb2bacceleratoraddon.application-context=opfb2bacceleratoraddon-spring.xml
+
+yacceleratorstorefront.additionalWebSpringConfigs.opfb2bacceleratoraddon=classpath:/opfb2bacceleratoraddon/web/spring/opfb2bacceleratoraddon-web-spring.xml,classpath\:/opfb2bacceleratoraddon/web/spring/multi-step-checkout-config.xml
+
+
+
+opfb2bacceleratoraddon.javascript.paths.responsive=/responsive/common/js/opfb2bacceleratoraddon.js
+opfb2bacceleratoraddon.css.paths.responsive=/responsive/common/css/opfb2bacceleratoraddon.css

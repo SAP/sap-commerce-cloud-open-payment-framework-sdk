@@ -1,0 +1,16 @@
+# -----------------------------------------------------------------------
+# Copyright (c) 2025 SAP SE or an SAP affiliate company. All rights reserved.
+# -----------------------------------------------------------------------
+#
+# Update the Checkout Flow Group
+
+$storeUid=powertools
+$siteUid=powertools
+$checkoutFlowGroup=b2bOpfCheckoutGroup
+
+# Base Store
+INSERT_UPDATE BaseStore;uid[unique=true];checkoutFlowGroup;
+                       ;$storeUid       ;$checkoutFlowGroup;
+
+UPDATE CMSSite; uid[unique = true]; urlPatterns
+              ; $storeUid ; (?i)^https?://[^/]+/$siteUid(/.*)?$

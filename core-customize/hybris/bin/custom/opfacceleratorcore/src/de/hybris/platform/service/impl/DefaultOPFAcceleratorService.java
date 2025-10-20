@@ -8,6 +8,7 @@ import de.hybris.platform.commercefacades.order.CheckoutFacade;
 import de.hybris.platform.commercefacades.order.data.CartData;
 import de.hybris.platform.constants.OpfacceleratorcoreConstants;
 import de.hybris.platform.core.model.order.CartModel;
+import de.hybris.platform.core.model.order.payment.InvoicePaymentInfoModel;
 import de.hybris.platform.core.model.order.payment.SAPGenericPaymentInfoModel;
 import de.hybris.platform.cta.request.OPFPaymentCTARequest;
 import de.hybris.platform.cta.response.OPFPaymentCTAResponse;
@@ -30,13 +31,12 @@ import de.hybris.platform.payment.model.PaymentTransactionModel;
 import de.hybris.platform.service.OPFAcceleratorService;
 import de.hybris.platform.servicelayer.config.ConfigurationService;
 import de.hybris.platform.servicelayer.model.ModelService;
+import de.hybris.platform.site.BaseSiteService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
@@ -62,7 +62,6 @@ public class DefaultOPFAcceleratorService implements OPFAcceleratorService {
     private static final String OPF_ACTIVE_CONFIG_URL = "opf.active.config.url";
     private static final String OPF_ACTIVE_CONFIG_PAGE_SIZE = "opf.active.config.pageSize";
     private static final String OPF_ACTIVE_CONFIG_PAGE_NUMBER = "opf.active.config.pageNumber";
-    private static final String OPF_ACTIVE_CONFIG_DIVISIONID = "opf.active.config.division.id";
     private static final String OPF_ACTIVE_CONFIG_CONFIGURATIONID = "opf.active.config.configuration.id";
     private static final String OPF_PAYMENT_INITIATE_URL = "opf.initiate.payment.session.url";
     private static final String OPF_SUBMIT_URL = "opf.submit.url";
@@ -78,6 +77,8 @@ public class DefaultOPFAcceleratorService implements OPFAcceleratorService {
     private ModelService modelService;
     private CheckoutFacade checkoutFacade;
     private OPFHttpClient opfHttpClient;
+    @Resource(name = "baseSiteService")
+    private BaseSiteService baseSiteService;
 
     /**
      * Constructor for DefaultOPFAcceleratorPaymentService
@@ -85,6 +86,8 @@ public class DefaultOPFAcceleratorService implements OPFAcceleratorService {
      * @param opfHttpClient the httpclient
      * @param configurationService configurationService
      * @param checkoutFacade OOTB checkoutFacade
+     * @param cartService cartService
+     * @param modelService modelService
      */
     public DefaultOPFAcceleratorService(final OPFHttpClient opfHttpClient, final ConfigurationService configurationService,
             final CheckoutFacade checkoutFacade, final CartService cartService, final ModelService modelService) {
@@ -137,11 +140,13 @@ public class DefaultOPFAcceleratorService implements OPFAcceleratorService {
         if (StringUtils.isNotEmpty(getConfigurationValueForKey(OPF_ACTIVE_CONFIG_PAGE_NUMBER))) {
             queryParams.put("pageNumber", getConfigurationValueForKey(OPF_ACTIVE_CONFIG_PAGE_NUMBER));
         }
-        if (StringUtils.isNotEmpty(getConfigurationValueForKey(OPF_ACTIVE_CONFIG_DIVISIONID))) {
-            queryParams.put("divisionId", getConfigurationValueForKey(OPF_ACTIVE_CONFIG_DIVISIONID));
-        }
+
         if (StringUtils.isNotEmpty(getConfigurationValueForKey(OPF_ACTIVE_CONFIG_CONFIGURATIONID))) {
             queryParams.put("configurationId", getConfigurationValueForKey(OPF_ACTIVE_CONFIG_CONFIGURATIONID));
+        }
+        String siteId = baseSiteService.getCurrentBaseSite().getUid();
+        if (StringUtils.isNotEmpty(siteId)) {
+            queryParams.put("divisionId", siteId);
         }
         if (MapUtils.isNotEmpty(queryParams)) {
             request.setQueryParams(queryParams);
@@ -321,6 +326,36 @@ public class DefaultOPFAcceleratorService implements OPFAcceleratorService {
         request.setPath(getConfigurationValueForKey(OPF_APPLE_PAY_WEB_SESSION_URL));
         request.setRequestBody(opfApplePayRequest);
         return opfHttpClient.httpExchange(getConfigurationValueForKey(OPF_BASE_URL), request);
+    }
+
+    @Override
+    public void setPaymentInfoForAccount() {
+        CartModel cartModel = cartService.getSessionCart();
+        if (null != cartModel && cartModel.getPaymentInfo() instanceof InvoicePaymentInfoModel) {
+            SAPGenericPaymentInfoModel sapGenericPaymentInfoModel = modelService.create(SAPGenericPaymentInfoModel.class);
+            if (null != cartModel.getUser()) {
+                sapGenericPaymentInfoModel.setUser(cartModel.getUser());
+                sapGenericPaymentInfoModel.setCode(cartModel.getUser().getUid() + "_" + UUID.randomUUID());
+            }
+            sapGenericPaymentInfoModel.setSapCartId(cartModel.getCode());
+            modelService.save(sapGenericPaymentInfoModel);
+            cartModel.setPaymentInfo(sapGenericPaymentInfoModel);
+            modelService.save(cartModel);
+            modelService.refresh(cartModel);
+        }
+    }
+
+    /**
+     * Clear sapPaymentOptionId from cart
+     */
+    @Override
+    public void clearSapPaymentOptionId() {
+        CartModel cartModel = cartService.getSessionCart();
+        if (null != cartModel && StringUtils.isNotEmpty(cartModel.getSapPaymentOptionId())) {
+            cartModel.setSapPaymentOptionId(null);
+            modelService.save(cartModel);
+            modelService.refresh(cartModel);
+        }
     }
 
     /**
