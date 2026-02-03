@@ -46,16 +46,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import de.hybris.platform.opf.dto.user.AddressWsDTO;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping(value = "/checkout/multi/opf-payment")
+@RequestMapping(value = "/checkout/multi/opf-b2b-payment")
 public class OPFB2BPaymentCheckoutStepController extends AbstractCheckoutStepController {
     private static final Logger LOG = Logger.getLogger(OPFB2BPaymentCheckoutStepController.class);
     private static final String OPF_PAYMENT = "opf-payment";

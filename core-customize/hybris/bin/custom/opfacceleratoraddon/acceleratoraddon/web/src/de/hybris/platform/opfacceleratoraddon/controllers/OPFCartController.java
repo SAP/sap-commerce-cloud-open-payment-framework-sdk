@@ -26,7 +26,7 @@ import de.hybris.platform.opfacceleratoraddon.validation.OPFAddressValidator;
 import de.hybris.platform.opfacceleratoraddon.validation.OPFDeliveryAddressValidator;
 import de.hybris.platform.opfacceleratoraddon.validation.OPFGuestValidator;
 import de.hybris.platform.servicelayer.exceptions.ModelSavingException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,9 +36,9 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping(value = "/opf/cart")

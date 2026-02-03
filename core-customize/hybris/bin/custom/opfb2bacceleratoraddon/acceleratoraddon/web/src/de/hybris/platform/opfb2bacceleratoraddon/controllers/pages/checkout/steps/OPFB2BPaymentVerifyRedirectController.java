@@ -24,16 +24,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Map;
 
 @Controller
-@RequestMapping(value = "/opf/payment-verification-redirect")
+@RequestMapping(value = "/opf/b2b-payment-verification-redirect")
 public class OPFB2BPaymentVerifyRedirectController extends AbstractCheckoutController{
 
     private static final Logger LOG = Logger.getLogger(OPFB2BPaymentVerifyRedirectController.class);
     protected static final String MULTI_CHECKOUT_SUMMARY_CMS_PAGE_LABEL = "multiStepCheckoutSummary";
-    private static final String REDIRECT_OPF_PAYMENT = "redirect:/checkout/multi/opf-payment/choose";
+    private static final String REDIRECT_OPF_PAYMENT = "redirect:/checkout/multi/opf-b2b-payment/choose";
     @Resource(name = "opfAcceleratorFacade")
     private OPFAcceleratorFacade opfAcceleratorFacade;
 

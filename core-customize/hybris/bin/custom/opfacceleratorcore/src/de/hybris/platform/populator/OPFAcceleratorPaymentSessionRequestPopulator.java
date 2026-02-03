@@ -12,7 +12,7 @@ import de.hybris.platform.opf.data.OPFPaymentBrowserInfoData;
 import de.hybris.platform.opf.dto.OPFInitiatePaymentSessionRequest;
 import de.hybris.platform.servicelayer.dto.converter.ConversionException;
 import de.hybris.platform.servicelayer.dto.converter.Converter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Populates OPFInitiatePaymentSessionRequestData. This populator is used to map internal payment data into a request during the payment

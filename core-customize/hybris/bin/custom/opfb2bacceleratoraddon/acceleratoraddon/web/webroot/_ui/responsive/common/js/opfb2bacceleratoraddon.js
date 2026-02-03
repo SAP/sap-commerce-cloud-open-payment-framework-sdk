@@ -25,14 +25,14 @@ function removeLeadingSlashes(path) {
    showPageLoader();
    showLoader();
 
-   const url = `${ACC.config.contextPath}/checkout/multi/opf-payment/payment-initiate`;
+   const url = `${ACC.config.contextPath}/checkout/multi/opf-b2b-payment/payment-initiate`;
    const origin = window?.location?.origin;
    const encodedContextPath = removeLeadingSlashes(ACC.config.encodedContextPath);
 
    const payload = {
      accountId,
-     resultURL: `${origin}/${encodedContextPath}/opf/payment-verification-redirect/result`,
-     cancelURL: `${origin}/${encodedContextPath}/opf/payment-verification-redirect/cancel`,
+     resultURL: `${origin}/${encodedContextPath}/opf/b2b-payment-verification-redirect/result`,
+     cancelURL: `${origin}/${encodedContextPath}/opf/b2b-payment-verification-redirect/cancel`,
      browserInfo: getBrowserInfo()
    };
 
@@ -398,7 +398,7 @@ function removeLeadingSlashes(path) {
  }
 
  function opfPaymentSubmit(payload, callback, paymentSessionId) {
-   let url = `${ACC.config.contextPath}/checkout/multi/opf-payment/${encodeURIComponent(paymentSessionId)}/payment-submit`;
+   let url = `${ACC.config.contextPath}/checkout/multi/opf-b2b-payment/${encodeURIComponent(paymentSessionId)}/payment-submit`;
 
    // Ensure the URL is clean and does not contain double slashes if paymentSessionId is empty for Quick Buy Payments
    url = url.replace(/\/{2,}/g, "/");
@@ -431,7 +431,7 @@ function removeLeadingSlashes(path) {
        additionalData,
      };
 
-     const url = `${ACC.config.contextPath}/checkout/multi/opf-payment/${encodeURIComponent(paymentSessionId)}/payment-submit-complete`;
+     const url = `${ACC.config.contextPath}/checkout/multi/opf-b2b-payment/${encodeURIComponent(paymentSessionId)}/payment-submit-complete`;
 
      attemptAjaxSubmit({
        url,
@@ -546,7 +546,7 @@ function removeLeadingSlashes(path) {
   * Places an order after the payment was authorized
  */
  function placePaymentAuthorizedOrder() {
-   const url = `${ACC.config.contextPath}/checkout/multi/summary/opf-payment/placeOrder?termsChecked=true`;
+   const url = `${ACC.config.contextPath}/checkout/multi/summary/opf-b2b-payment/placeOrder?termsChecked=true`;
 
    showPageLoader();
 
@@ -661,7 +661,7 @@ function saveBillingAddress(cartId, billingAddress) {
     return;
   }
 
-  const url = `${ACC.config.contextPath}/checkout/multi/opf-payment/${cartId}/addresses/billing`;
+  const url = `${ACC.config.contextPath}/checkout/multi/opf-b2b-payment/${cartId}/addresses/billing`;
   showPageLoader();
 
   $.ajax({
@@ -815,7 +815,7 @@ function runPaymentPattern({ paramsMap, afterRedirectScriptFlag }) {
  * Executes the hosted page pattern by calling the verification endpoint.
  */
 function runHostedPagePattern(paramsMap) {
-  const baseUrl = `${ACC.config.contextPath}/opf/payment-verification-redirect/verify`;
+  const baseUrl = `${ACC.config.contextPath}/opf/b2b-payment-verification-redirect/verify`;
 
   // Convert param array to query string
   const queryParams = new URLSearchParams(paramsMap.map(({ key, value }) => [key, value]));
@@ -843,7 +843,7 @@ function runHostedPagePattern(paramsMap) {
  */
 window.Opf.verifyPayment = function(requestMap) {
   const encodedContextPath = removeLeadingSlashes(ACC.config.encodedContextPath);
-  const fallbackUrl = `${window.location.origin}/${encodedContextPath}/checkout/multi/opf-payment/choose`;
+  const fallbackUrl = `${window.location.origin}/${encodedContextPath}/checkout/multi/opf-b2b-payment/choose`;
 
   try {
     const { paramsMap, afterRedirectScriptFlag } = verifyResultUrl(requestMap);

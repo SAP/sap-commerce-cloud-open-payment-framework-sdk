@@ -8,13 +8,17 @@ import de.hybris.platform.b2b.enums.CheckoutPaymentType;
 import de.hybris.platform.commercefacades.order.CheckoutFacade;
 
 import de.hybris.platform.commercefacades.order.data.CartData;
-import org.springframework.beans.factory.annotation.Required;
 
 /**
  * Checkout step for order summary page.
  */
 public class OPFB2BSummaryCheckoutStep extends CheckoutStep {
+
     private CheckoutFacade checkoutFacade;
+
+    public OPFB2BSummaryCheckoutStep(final CheckoutFacade checkoutFacade){
+        this.checkoutFacade = checkoutFacade;
+    }
 
     @Override
     public boolean isEnabled() {
@@ -27,11 +31,6 @@ public class OPFB2BSummaryCheckoutStep extends CheckoutStep {
 
     protected CheckoutFacade getCheckoutFacade() {
         return checkoutFacade;
-    }
-
-    @Required
-    public void setCheckoutFacade(final CheckoutFacade checkoutFacade) {
-        this.checkoutFacade = checkoutFacade;
     }
 
 }

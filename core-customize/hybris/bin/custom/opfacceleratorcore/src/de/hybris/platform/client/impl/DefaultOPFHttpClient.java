@@ -7,7 +7,8 @@ import de.hybris.platform.client.OPFHttpClient;
 import de.hybris.platform.opfservices.client.OAuth2TokenException;
 import de.hybris.platform.opfservices.client.impl.DefaultCCAdapterHttpClient;
 import de.hybris.platform.servicelayer.config.ConfigurationService;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.retry.support.RetryTemplate;
 

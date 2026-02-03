@@ -6,7 +6,7 @@ package de.hybris.platform.opfb2bacceleratoraddon.forms.validation;
 import de.hybris.platform.b2b.enums.CheckoutPaymentType;
 
 import de.hybris.platform.opfb2bacceleratoraddon.forms.PaymentTypeForm;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

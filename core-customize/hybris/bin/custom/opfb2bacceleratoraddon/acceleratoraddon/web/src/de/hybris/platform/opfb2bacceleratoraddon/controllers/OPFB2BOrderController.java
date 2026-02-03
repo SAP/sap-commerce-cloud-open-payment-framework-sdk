@@ -14,7 +14,7 @@ import de.hybris.platform.opfb2bacceleratoraddon.exception.OPFAcceleratorExcepti
 import de.hybris.platform.opfb2bacceleratoraddon.exception.OPFRequestValidationException;
 import de.hybris.platform.opfb2bacceleratoraddon.validation.OPFOrderCartValidator;
 import de.hybris.platform.servicelayer.i18n.I18NService;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -28,13 +28,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 @Controller
-@RequestMapping(value = "/checkout/multi/summary/opf-payment")
-public class OPFOrderController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OPFOrderController.class);
+@RequestMapping(value = "/checkout/multi/summary/opf-b2b-payment")
+public class OPFB2BOrderController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OPFB2BOrderController.class);
     @Resource(name = "cartFacade")
     private CartFacade cartFacade;
     @Resource(name = "opfOrderCartValidator")

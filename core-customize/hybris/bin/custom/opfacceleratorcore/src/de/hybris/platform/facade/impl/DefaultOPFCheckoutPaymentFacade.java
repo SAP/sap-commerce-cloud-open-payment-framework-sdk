@@ -13,8 +13,7 @@ import de.hybris.platform.core.model.user.AddressModel;
 import de.hybris.platform.core.model.user.CustomerModel;
 import de.hybris.platform.facade.OPFCheckoutPaymentFacade;
 import de.hybris.platform.order.CartService;
-
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Optional;
 
 

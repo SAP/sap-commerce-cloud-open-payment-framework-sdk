@@ -28,7 +28,7 @@ import de.hybris.platform.cronjob.enums.DayOfWeek;
 import de.hybris.platform.opfb2bacceleratoraddon.forms.PlaceOrderForm;
 import de.hybris.platform.order.InvalidCartException;
 import de.hybris.platform.payment.AdapterException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;

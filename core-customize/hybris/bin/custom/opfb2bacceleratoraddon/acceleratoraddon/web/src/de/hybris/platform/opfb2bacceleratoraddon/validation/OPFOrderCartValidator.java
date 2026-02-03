@@ -13,7 +13,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Locale;
 
 /**

@@ -6,7 +6,7 @@ package de.hybris.platform.opfacceleratoraddon.validation;
 import de.hybris.platform.commercefacades.user.data.AddressData;
 import de.hybris.platform.commercefacades.user.data.RegionData;
 import de.hybris.platform.servicelayer.i18n.I18NService;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

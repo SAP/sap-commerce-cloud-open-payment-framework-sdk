@@ -78,9 +78,9 @@
 
     <alias name="defaultB2bSummaryCheckoutStep" alias="summaryCheckoutStep" />
     <bean id="defaultB2bSummaryCheckoutStep"  class="de.hybris.platform.opfb2bacceleratoraddon.checkout.steps.OPFB2BSummaryCheckoutStep" parent="checkoutStep">
+        <constructor-arg name="checkoutFacade" ref="b2bCheckoutFacade" />
         <property name="checkoutGroup" ref="b2bOpfCheckoutGroup"/>
         <property name="checkoutStepValidator" ref="defaultSummaryCheckoutValidator"/>
-        <property name="checkoutFacade" ref="b2bCheckoutFacade" />
         <property name="transitions">
             <map merge="true">
                 <entry key="previous" value-ref="REDIRECT_TO_PAYMENT_METHOD"/>
@@ -173,10 +173,10 @@
     <!-- Redirects -->
 
     <bean id="REDIRECT_TO_PAYMENT_TYPE" class="java.lang.String">
-        <constructor-arg value="redirect:/checkout/multi/opf-payment-type/choose"/>
+        <constructor-arg value="redirect:/checkout/multi/opf-b2b-payment-type/choose"/>
     </bean>
     <bean id="REDIRECT_TO_PAYMENT_METHOD" class="java.lang.String">
-        <constructor-arg value="redirect:/checkout/multi/opf-payment/choose"/>
+        <constructor-arg value="redirect:/checkout/multi/opf-b2b-payment/choose"/>
     </bean>
 
     <bean id="REDIRECT_TO_SUMMARY" class="java.lang.String">
