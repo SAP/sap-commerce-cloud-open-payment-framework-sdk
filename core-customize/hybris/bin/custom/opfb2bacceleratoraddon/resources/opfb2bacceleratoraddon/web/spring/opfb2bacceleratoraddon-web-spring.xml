@@ -60,14 +60,14 @@
         <entry key="viewName" value="/pages/checkout/multi/opfVerifyPaymentPage" />
     </util:map>
 
-    <alias name="defaultOPFOrderCartValidator" alias="opfOrderCartValidator"/>
-    <bean id="defaultOPFOrderCartValidator" class="de.hybris.platform.opfb2bacceleratoraddon.validation.OPFOrderCartValidator">
+    <alias name="defaultB2BOPFOrderCartValidator" alias="opfB2BOrderCartValidator"/>
+    <bean id="defaultB2BOPFOrderCartValidator" class="de.hybris.platform.opfb2bacceleratoraddon.validation.OPFB2BOrderCartValidator">
         <constructor-arg ref="messageSource"/>
         <constructor-arg ref="i18NService"/>
     </bean>
 
-    <alias name="defaultOPFAddressValidator" alias="opfAddressValidator"/>
-    <bean id="defaultOPFAddressValidator" class="de.hybris.platform.opfb2bacceleratoraddon.validation.OPFAddressValidator">
+    <alias name="defaultOPFB2BAddressValidator" alias="opfB2BAddressValidator"/>
+    <bean id="defaultOPFB2BAddressValidator" class="de.hybris.platform.opfb2bacceleratoraddon.validation.OPFB2BAddressValidator">
         <constructor-arg ref="messageSource"/>
         <constructor-arg ref="i18NService"/>
     </bean>

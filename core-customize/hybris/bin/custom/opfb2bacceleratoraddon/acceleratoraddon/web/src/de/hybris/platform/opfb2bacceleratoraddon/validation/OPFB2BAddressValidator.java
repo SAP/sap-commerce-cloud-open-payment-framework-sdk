@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Validator for address forms. Enforces the order of validation
  */
-public class OPFAddressValidator implements Validator {
+public class OPFB2BAddressValidator implements Validator {
     private static final int MAX_FIELD_LENGTH = 255;
     private static final int MAX_POSTCODE_LENGTH = 10;
     private final I18NService i18NService;
@@ -29,12 +29,12 @@ public class OPFAddressValidator implements Validator {
     }
 
     /**
-     * Constructs a new OPFAddressValidator with the specified services.
+     * Constructs a new OPFB2BAddressValidator with the specified services.
      *
      * @param i18NService The service used for internationalization and locale-specific operations.
      * @param messageSource The source for resolving messages, supporting internationalization.
      */
-    public OPFAddressValidator(final I18NService i18NService, final MessageSource messageSource) {
+    public OPFB2BAddressValidator(final I18NService i18NService, final MessageSource messageSource) {
         this.i18NService = i18NService;
         this.messageSource = messageSource;
     }

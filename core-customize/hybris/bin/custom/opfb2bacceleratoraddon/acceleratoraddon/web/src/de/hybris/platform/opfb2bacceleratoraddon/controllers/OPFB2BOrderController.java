@@ -12,7 +12,7 @@ import de.hybris.platform.commercefacades.order.data.OrderData;
 import de.hybris.platform.commerceservices.order.CommerceCartModificationException;
 import de.hybris.platform.opfb2bacceleratoraddon.exception.OPFAcceleratorException;
 import de.hybris.platform.opfb2bacceleratoraddon.exception.OPFRequestValidationException;
-import de.hybris.platform.opfb2bacceleratoraddon.validation.OPFOrderCartValidator;
+import de.hybris.platform.opfb2bacceleratoraddon.validation.OPFB2BOrderCartValidator;
 import de.hybris.platform.servicelayer.i18n.I18NService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -37,8 +37,8 @@ public class OPFB2BOrderController {
     private static final Logger LOGGER = LoggerFactory.getLogger(OPFB2BOrderController.class);
     @Resource(name = "cartFacade")
     private CartFacade cartFacade;
-    @Resource(name = "opfOrderCartValidator")
-    private OPFOrderCartValidator opfOrderCartValidator;
+    @Resource(name = "opfB2BOrderCartValidator")
+    private OPFB2BOrderCartValidator opfB2BOrderCartValidator;
     @Resource(name = "b2bCheckoutFacade")
     private CheckoutFacade b2bCheckoutFacade;
     @Resource(name = "messageSource")
@@ -63,7 +63,7 @@ public class OPFB2BOrderController {
         }
         final CartData cartData = b2bCheckoutFacade.getCheckoutCart();
         final Errors errors = new BeanPropertyBindingResult(cartData, "sessionCart");
-        opfOrderCartValidator.validate(cartData, errors);
+        opfB2BOrderCartValidator.validate(cartData, errors);
         if (errors.hasErrors()) {
             throw new OPFRequestValidationException("Some required fields are missing or contain errors", errors);
         }
