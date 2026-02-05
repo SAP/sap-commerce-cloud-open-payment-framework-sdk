@@ -27,7 +27,7 @@ import de.hybris.platform.facade.OPFAcceleratorFacade;
 import de.hybris.platform.facade.OPFCheckoutPaymentFacade;
 import de.hybris.platform.opfb2bacceleratoraddon.forms.PaymentTypeForm;
 import de.hybris.platform.opfb2bacceleratoraddon.forms.validation.OPFPaymentTypeFormValidator;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
@@ -37,13 +37,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 @Controller
-@RequestMapping(value = "/checkout/multi/opf-payment-type")
+@RequestMapping(value = "/checkout/multi/opf-b2b-payment-type")
 public class OPFPaymentTypeCheckoutStepController extends AbstractCheckoutStepController {
     private final static String OPF_PAYMENT_TYPE = "opf-payment-type";
 

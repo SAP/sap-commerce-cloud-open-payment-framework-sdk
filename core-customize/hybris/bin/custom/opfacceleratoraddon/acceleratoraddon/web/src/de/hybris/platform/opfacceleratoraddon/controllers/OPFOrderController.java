@@ -17,7 +17,7 @@ import de.hybris.platform.opfacceleratoraddon.exception.OPFAcceleratorException;
 import de.hybris.platform.opfacceleratoraddon.exception.OPFRequestValidationException;
 import de.hybris.platform.opfacceleratoraddon.validation.OPFOrderCartValidator;
 import de.hybris.platform.servicelayer.i18n.I18NService;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

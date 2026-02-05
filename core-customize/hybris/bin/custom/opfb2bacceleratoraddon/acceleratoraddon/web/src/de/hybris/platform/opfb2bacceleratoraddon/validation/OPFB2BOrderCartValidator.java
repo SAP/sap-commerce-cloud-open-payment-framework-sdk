@@ -13,15 +13,15 @@ import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.Locale;
 
 /**
  * Validator for checking cart and checkout state before placing an order.
  */
-public class OPFOrderCartValidator implements Validator {
+public class OPFB2BOrderCartValidator implements Validator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OPFOrderCartValidator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OPFB2BOrderCartValidator.class);
 
     @Resource(name = "checkoutFlowFacade")
     private CheckoutFlowFacade checkoutFlowFacade;
@@ -30,7 +30,7 @@ public class OPFOrderCartValidator implements Validator {
     private MessageSource messageSource;
     private I18NService i18nService;
 
-    public OPFOrderCartValidator(final I18NService i18NService, final MessageSource messageSource) {
+    public OPFB2BOrderCartValidator(final I18NService i18NService, final MessageSource messageSource) {
         this.i18nService = i18NService;
         this.messageSource = messageSource;
     }

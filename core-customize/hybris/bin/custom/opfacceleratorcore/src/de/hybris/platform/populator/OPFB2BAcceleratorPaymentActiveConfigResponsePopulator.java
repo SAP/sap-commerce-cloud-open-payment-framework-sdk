@@ -8,7 +8,7 @@ import de.hybris.platform.b2b.enums.CheckoutPaymentType;
 import de.hybris.platform.converters.Populator;
 import de.hybris.platform.data.response.OPFActiveConfigValue;
 import de.hybris.platform.servicelayer.dto.converter.ConversionException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Populator implementation for converting OPFActiveConfigValue to B2BPaymentTypeData. This class handles the mapping of data between the

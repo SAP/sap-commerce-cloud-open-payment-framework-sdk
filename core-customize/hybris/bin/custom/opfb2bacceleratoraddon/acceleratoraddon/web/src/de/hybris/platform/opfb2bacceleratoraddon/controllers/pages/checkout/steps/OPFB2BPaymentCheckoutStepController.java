@@ -28,7 +28,7 @@ import de.hybris.platform.opf.dto.OPFInitiatePaymentSessionRequest;
 import de.hybris.platform.opf.dto.OPFPaymentSubmitCompleteRequest;
 import de.hybris.platform.opfb2bacceleratoraddon.exception.OPFAcceleratorException;
 import de.hybris.platform.opfb2bacceleratoraddon.exception.OPFRequestValidationException;
-import de.hybris.platform.opfb2bacceleratoraddon.validation.OPFAddressValidator;
+import de.hybris.platform.opfb2bacceleratoraddon.validation.OPFB2BAddressValidator;
 import de.hybris.platform.opfservices.client.CCAdapterClientException;
 import de.hybris.platform.util.OPFAcceleratorCoreUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,16 +46,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import de.hybris.platform.opf.dto.user.AddressWsDTO;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping(value = "/checkout/multi/opf-payment")
+@RequestMapping(value = "/checkout/multi/opf-b2b-payment")
 public class OPFB2BPaymentCheckoutStepController extends AbstractCheckoutStepController {
     private static final Logger LOG = Logger.getLogger(OPFB2BPaymentCheckoutStepController.class);
     private static final String OPF_PAYMENT = "opf-payment";
@@ -63,8 +63,8 @@ public class OPFB2BPaymentCheckoutStepController extends AbstractCheckoutStepCon
     private OPFAcceleratorFacade opfAcceleratorFacade;
     @Resource(name = "commerceCommonI18NService")
     private CommerceCommonI18NService commerceCommonI18NService;
-    @Resource(name = "opfAddressValidator")
-    private OPFAddressValidator opfAddressValidator;
+    @Resource(name = "opfB2BAddressValidator")
+    private OPFB2BAddressValidator opfB2BAddressValidator;
     @Resource(name = "sapCheckoutPaymentFacade")
     private CheckoutPaymentFacade checkoutPaymentFacade;
     @Resource(name = "opfCheckoutPaymentFacade")
@@ -276,7 +276,7 @@ public class OPFB2BPaymentCheckoutStepController extends AbstractCheckoutStepCon
             @Parameter(description = "Address object.", required = true) @RequestBody final AddressWsDTO addressWsDTO) {
         AddressData addressData = opfAcceleratorFacade.mapAddressWsDTOToAddressData(addressWsDTO);
         final Errors errors = new BeanPropertyBindingResult(addressData, "addressData");
-        opfAddressValidator.validate(addressData, errors);
+        opfB2BAddressValidator.validate(addressData, errors);
         if (errors.hasErrors())
         {
             throw new OPFRequestValidationException("Some required fields are missing or contain errors",errors);

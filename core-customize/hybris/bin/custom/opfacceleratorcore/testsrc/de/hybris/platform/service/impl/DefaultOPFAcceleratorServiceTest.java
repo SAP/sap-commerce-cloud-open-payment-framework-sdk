@@ -27,7 +27,7 @@ import de.hybris.platform.core.model.order.payment.SAPGenericPaymentInfoModel;
 import de.hybris.platform.opf.dto.OPFPaymentVerifyRequest;
 import de.hybris.platform.opf.dto.OPFPaymentVerifyResponse;
 import de.hybris.platform.servicelayer.model.ModelService;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;

@@ -12,9 +12,9 @@ import de.hybris.platform.commercefacades.order.data.OrderData;
 import de.hybris.platform.commerceservices.order.CommerceCartModificationException;
 import de.hybris.platform.opfb2bacceleratoraddon.exception.OPFAcceleratorException;
 import de.hybris.platform.opfb2bacceleratoraddon.exception.OPFRequestValidationException;
-import de.hybris.platform.opfb2bacceleratoraddon.validation.OPFOrderCartValidator;
+import de.hybris.platform.opfb2bacceleratoraddon.validation.OPFB2BOrderCartValidator;
 import de.hybris.platform.servicelayer.i18n.I18NService;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -28,17 +28,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.List;
 
 @Controller
-@RequestMapping(value = "/checkout/multi/summary/opf-payment")
-public class OPFOrderController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OPFOrderController.class);
+@RequestMapping(value = "/checkout/multi/summary/opf-b2b-payment")
+public class OPFB2BOrderController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OPFB2BOrderController.class);
     @Resource(name = "cartFacade")
     private CartFacade cartFacade;
-    @Resource(name = "opfOrderCartValidator")
-    private OPFOrderCartValidator opfOrderCartValidator;
+    @Resource(name = "opfB2BOrderCartValidator")
+    private OPFB2BOrderCartValidator opfB2BOrderCartValidator;
     @Resource(name = "b2bCheckoutFacade")
     private CheckoutFacade b2bCheckoutFacade;
     @Resource(name = "messageSource")
@@ -63,7 +63,7 @@ public class OPFOrderController {
         }
         final CartData cartData = b2bCheckoutFacade.getCheckoutCart();
         final Errors errors = new BeanPropertyBindingResult(cartData, "sessionCart");
-        opfOrderCartValidator.validate(cartData, errors);
+        opfB2BOrderCartValidator.validate(cartData, errors);
         if (errors.hasErrors()) {
             throw new OPFRequestValidationException("Some required fields are missing or contain errors", errors);
         }

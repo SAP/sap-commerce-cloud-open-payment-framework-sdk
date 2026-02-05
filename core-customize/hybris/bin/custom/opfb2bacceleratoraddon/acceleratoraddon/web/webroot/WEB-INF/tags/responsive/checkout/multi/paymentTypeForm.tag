@@ -4,7 +4,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <spring:htmlEscape defaultHtmlEscape="true"/>
-<form:form id="selectPaymentTypeForm" modelAttribute="paymentTypeForm" action="${request.contextPath}/checkout/multi/opf-payment-type/choose" method="post">
+<form:form id="selectPaymentTypeForm" modelAttribute="paymentTypeForm" action="${request.contextPath}/checkout/multi/opf-b2b-payment-type/choose" method="post">
     <div class="step-body-form">
         <div class="radiobuttons_paymentselection">
             <c:forEach items="${paymentTypes}" var="paymentType">

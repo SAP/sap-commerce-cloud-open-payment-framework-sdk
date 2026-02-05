@@ -82,7 +82,7 @@
                 <div class="opf-checkout-shipping">
                    <div class="checkout-indent">
                      <div class="opf-select-payment"><spring:theme code="checkout.summary.opfPayment.selectopfmethodfororder" /></div>
-                     <spring:url var="selectOpfPaymentMethodUrl" value="{contextPath}/checkout/multi/opf-payment/select" htmlEscape="false" >
+                     <spring:url var="selectOpfPaymentMethodUrl" value="{contextPath}/checkout/multi/opf-b2b-payment/select" htmlEscape="false" >
                          <spring:param name="contextPath" value="${request.contextPath}" />
                       </spring:url>
                       <form id="selectDeliveryMethodForm" action="${fn:escapeXml(selectOpfPaymentMethodUrl)}" method="get">

@@ -8,8 +8,8 @@ import de.hybris.platform.opfacceleratoraddon.exception.OPFRequestValidationExce
 import de.hybris.platform.opfservices.client.CCAdapterClientException;
 import de.hybris.platform.webservicescommons.dto.error.ErrorListWsDTO;
 import de.hybris.platform.webservicescommons.dto.error.ErrorWsDTO;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -44,7 +44,7 @@ import de.hybris.platform.service.OPFAcceleratorService;
 import de.hybris.platform.servicelayer.dto.converter.Converter;
 import de.hybris.platform.util.OPFAcceleratorCoreUtil;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
