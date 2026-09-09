@@ -16,6 +16,7 @@
         <requires-extension name="acceleratorstorefrontcommons"/>
         <requires-extension name="addonsupport"/>
         <requires-extension name="opfacceleratorcore"/>
+        <requires-extension name="opffacades"/>
 
 
         <coremodule generated="true" manager="de.hybris.platform.jalo.OpfacceleratoraddonManager"

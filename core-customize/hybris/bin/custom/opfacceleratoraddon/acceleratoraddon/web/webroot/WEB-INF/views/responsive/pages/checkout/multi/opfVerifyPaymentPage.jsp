@@ -18,13 +18,20 @@
 </template:page>
 
 <script>
-  // Convert server-side requestMap to a usable JavaScript object
-  const requestMap = {
-    <c:forEach var="entry" items="${requestMap}" varStatus="loopStatus">
-      "${fn:escapeXml(entry.key)}": "${fn:escapeXml(entry.value)}"<c:if test="${!loopStatus.last}">,</c:if>
-    </c:forEach>
-  };
+  // If loaded inside an iframe (e.g. iframe payment pattern), break out to top-level window first.
+  // This ensures window.Opf exists and session is available before verifyPayment is called.
+  // For other patterns (hosted page, redirect, etc.), window.top === window so this is a no-op.
+  if (window.top !== window) {
+    window.top.location.href = window.location.href;
+  } else {
+    // Convert server-side requestMap to a usable JavaScript object
+    const requestMap = {
+      <c:forEach var="entry" items="${requestMap}" varStatus="loopStatus">
+        "${fn:escapeXml(entry.key)}": "${fn:escapeXml(entry.value)}"<c:if test="${!loopStatus.last}">,</c:if>
+      </c:forEach>
+    };
 
-  // Trigger payment verification
-  window.Opf.verifyPayment(requestMap);
+    // Trigger payment verification
+    window.Opf.verifyPayment(requestMap);
+  }
 </script>

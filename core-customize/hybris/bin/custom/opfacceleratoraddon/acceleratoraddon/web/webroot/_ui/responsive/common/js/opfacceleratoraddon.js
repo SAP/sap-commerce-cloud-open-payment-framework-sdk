@@ -324,6 +324,10 @@ function renderPaymentGateway(paymentGateway, proceedPaymentLabel) {
     return showFullPageLink(destination.url, proceedPaymentLabel);
   }
 
+  if (pattern === 'IFRAME' && destination?.url) {
+    return showIframeGateway(destination);
+  }
+
   showPaymentGatewayError(new Error('Unknown or unsupported payment gateway render type.'));
 }
 
@@ -1106,6 +1110,60 @@ function showFullPageLink(url, proceedPaymentLabel) {
   `;
 
   document.getElementById('payment-gateway-loader').style.display = 'none';
+}
+
+/**
+ * Renders the IFRAME payment gateway by creating a hidden form that POSTs
+ * to the PSP URL and targets an inline iframe.
+ */
+function showIframeGateway(destination) {
+  const container = document.getElementById('payment-gateway-container');
+  container.innerHTML = '';
+
+  if (!destination?.url) {
+    return showPaymentGatewayError(new Error('Missing destination URL for iframe gateway.'));
+  }
+
+  if (!destination.form || destination.form.length === 0) {
+    return showPaymentGatewayError(new Error('Missing form fields for iframe gateway.'));
+  }
+
+  const iframeName = 'payment-iframe';
+
+  // 1. Create iframe (will be populated by the POST response)
+  const iframe = document.createElement('iframe');
+  iframe.name = iframeName;
+  iframe.title = 'Payment Gateway';
+  iframe.setAttribute('allow', 'payment');
+  iframe.style.width = '100%';
+  iframe.style.border = 'none';
+  iframe.style.minHeight = '600px';
+  container.appendChild(iframe);
+
+  // 2. Create form via DOM API (bypasses HTML parser nesting restrictions)
+  const form = document.createElement('form');
+  form.id = 'opf-iframe-form';
+  form.action = destination.url;
+  form.method = destination.method || 'POST';
+  form.enctype = destination.contentType || 'application/x-www-form-urlencoded';
+  form.target = iframeName;
+  form.style.display = 'none';
+
+  destination.form.forEach(f => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = f.name;
+    input.value = f.value;
+    form.appendChild(input);
+  });
+
+  container.appendChild(form);
+
+  const loader = document.getElementById('payment-gateway-loader');
+  if (loader) loader.style.display = 'none';
+
+  // 3. Use direct reference instead of getElementById
+  form.submit();
 }
 
 /**

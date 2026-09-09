@@ -48,7 +48,6 @@ public class OPFPaymentVerifyRedirectController extends AbstractCheckoutControll
      *         if the required CMS item is not found
      */
     @GetMapping(value = "/result")
-    @RequireHardLogIn
     public String getPaymentVerificationResult(@RequestParam Map<String, String> requestMap, final Model model)
             throws CMSItemNotFoundException {
         model.addAttribute("requestMap", requestMap);
