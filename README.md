@@ -37,7 +37,7 @@ Firstly clone this repository into your projects core-customize folder. Below ex
     | `ccAdapter.api.url` | Base URL of your OPF Cloud Connector    | **Yes**                           |
     | `ccAdapter.oauth.client-secret.file`        | ccadapter txt file name from step 3                               | **Yes**                           |
     | `ccAdapter.oauth.token.url`    | Token URL for Cloud Adapter | **Yes** |
-    | `opf.base.url`    | OPF tenant Base URL | **Yes** |
+    | `opf.base.url`    | OPF tenant Base URL <br>Format: `https://{opf-tenant-id}.opf.commerce.{region}.context.cloud.sap/opf` <br>Example: `https://opf-iss-d0.opf.commerce.us.context.cloud.sap/opf` | **Yes** |
     | `opf.oauth.client-secret.file`    | OPF payment gateway txt filename from step3 | **Yes** |
     | `opf.oauth.client-secret.file.location`    | `${HYBRIS_CONFIG_DIR}/security` | **Yes** |
     | `opf.oauth.token.url`    | Token URL for OPF | **Yes** |
@@ -97,7 +97,7 @@ For the B2B Accelerator storefront, the OPF integration is applicable only on th
     | `ccAdapter.api.url` | Base URL of your OPF Cloud Connector    | **Yes**                           |
     | `ccAdapter.oauth.client-secret.file`        | ccadapter txt file name from step 3                               | **Yes**                           |
     | `ccAdapter.oauth.token.url`    | Token URL for Cloud Adapter | **Yes** |
-    | `opf.base.url`    | OPF tenant Base URL | **Yes** |
+    | `opf.base.url`    | OPF tenant Base URL <br>Format: `https://{opf-tenant-id}.opf.commerce.{region}.context.cloud.sap/opf` <br>Example: `https://opf-iss-d0.opf.commerce.us.context.cloud.sap/opf` | **Yes** |
     | `opf.oauth.client-secret.file`    | OPF payment gateway txt filename from step3 | **Yes** |
     | `opf.oauth.client-secret.file.location`    | `${HYBRIS_CONFIG_DIR}/security` | **Yes** |
     | `opf.oauth.token.url`    | Token URL for OPF | **Yes** |
