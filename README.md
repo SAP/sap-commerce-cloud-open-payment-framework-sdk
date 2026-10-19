@@ -29,7 +29,12 @@ Firstly clone this repository into your projects core-customize folder. Below ex
  
 2. Enable OPF on the basestore by adjusting the store and site id and running the impex ``opfacceleratoraddon/resources/opfacceleratoraddon/impex/opf.impex``
  
-3. Create the folder named as security in the config folder , create txt files containing client_id and secret for ccadapter and contains client_id and secret for OPF payment gateway.(Note: the filenames created here should be defined in the **ccAdapter.oauth.client-secret.file** and **opf.oauth.client-secret.file**)
+3. Provide the client credentials for both ccadapter and OPF payment gateway. Create two txt files, one containing the client_id and secret for ccadapter, and the other containing the client_id and secret for OPF payment gateway. The filenames created here should be defined in the **ccAdapter.oauth.client-secret.file** and **opf.oauth.client-secret.file** properties.
+
+    - **Local environment**: Create a folder named `security` under the `config` folder, and place the two txt files inside it.
+    - **Global Commerce Instance**: Upload the two txt files via Cloud Portal and then associate them with your target environment:
+        1. Go to the **Security** menu, open the **Security Files** tab, and upload the two txt files.
+        2. Go to the **Environments** menu, select your target environment, and in the **Deployment Configuration** panel click **Add Security File** to attach the files you just uploaded to this environment.
  
 4. Add below tenant configs in the hcs_commons since urls are not part of the code
     | Property                 | Value                                           | Mandatory                         |
@@ -88,7 +93,12 @@ For the B2B Accelerator storefront, the OPF integration is applicable only on th
  
 2. Enable OPF on the basestore by adjusting the store and site id and running the impex ``opfb2bacceleratoraddon/resources/opfb2bacceleratoraddon/impex/b2bopf.impex``
  
-3. Create the folder named as security in the config folder, create txt files containing client_id and secret for ccadapter and contains client_id and secret for OPF payment gateway.(Note: the filenames created here should be defined in the **ccAdapter.oauth.client-secret.file** and **opf.oauth.client-secret.file**)
+3. Provide the client credentials for both ccadapter and OPF payment gateway. Create two txt files, one containing the client_id and secret for ccadapter, and the other containing the client_id and secret for OPF payment gateway. The filenames created here should be defined in the **ccAdapter.oauth.client-secret.file** and **opf.oauth.client-secret.file** properties.
+
+    - **Local environment**: Create a folder named `security` under the `config` folder, and place the two txt files inside it.
+    - **Global Commerce Instance**: Upload the two txt files via Cloud Portal and then associate them with your target environment:
+        1. Go to the **Security** menu, open the **Security Files** tab, and upload the two txt files.
+        2. Go to the **Environments** menu, select your target environment, and in the **Deployment Configuration** panel click **Add Security File** to attach the files you just uploaded to this environment.
  
 4. Add below tenant configs in the hcs_commons since urls are not part of the code
  
